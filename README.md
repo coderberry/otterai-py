@@ -16,6 +16,8 @@ Unofficial Python API for [otter.ai](http://otter.ai)
     -   [Groups](#groups)
     -   [Notifications](#notifications)
 -   [Exceptions](#exceptions)
+-   [Testing](#testing)
+-   [Development](#development)
 -   [Contribution](#contribution)
 
 ## Installation
@@ -26,17 +28,13 @@ Install via PyPI:
 pip install otterai-py
 ```
 
-Alternatively, install the development version:
+For development (from source):
 
 ```bash
-pip install .[dev]
-```
-
-or in a virtual environment:
-
-```bash
-python3 -m venv env
-source env/bin/activate
+git clone https://github.com/coderberry/otterai-py.git
+cd otterai-py
+python3 -m venv .venv
+source .venv/bin/activate
 pip install .[dev]
 ```
 
@@ -47,6 +45,20 @@ from otterai import OtterAI
 otter = OtterAI()
 otter.login('USERNAME', 'PASSWORD')
 ```
+
+### Structured Data Models
+
+This library now includes Pydantic models for structured data handling:
+
+```python
+from otterai import User, Workspace, Permission, BaseResponse
+
+# Models provide type safety and validation
+user = User(id=123, name="John Doe", email="john@example.com", 
+           first_name="John", last_name="Doe")
+```
+
+Future versions will include structured methods (e.g., `get_user_structured()`) that return these models instead of raw dictionaries.
 
 ## APIs
 
@@ -163,27 +175,115 @@ except OtterAIException as e:
     ...
 ```
 
+## Testing
+
+⚠️ **Important**: This project has two types of tests:
+
+- **Unit tests**: Mock tests that don't hit the API (safe to run)
+- **Integration tests**: Tests that make real API calls (can cause rate limits)
+
+### Running Tests Safely
+
+```bash
+# Run only unit tests (recommended for development)
+pytest tests/ -m 'not integration'
+
+# Run a single integration test
+pytest tests/test_otterai.py::test_get_user -s
+
+# See all available tests
+pytest tests/ --collect-only
+```
+
+### Rate Limiting Warning
+
+Running all tests together **will cause 429 rate limit errors** from the Otter.ai API. The test suite will warn you if you attempt this:
+
+```
+⚠️  WARNING: Running 12 integration tests together!
+This will likely result in 429 rate limit errors from the Otter.ai API.
+```
+
+## Development
+
+### Quick Start
+
+```bash
+# Setup development environment
+./run.sh
+```
+
+This script:
+- Creates a virtual environment
+- Installs dependencies
+- Runs pre-commit hooks
+- Executes unit tests (skipping integration tests)
+- Starts the example application
+
+### Manual Setup
+
+```bash
+# Create virtual environment
+python3 -m venv .venv
+source .venv/bin/activate
+
+# Install dependencies
+pip install .[dev]
+
+# Run unit tests only
+pytest tests/ -m 'not integration'
+```
+
+### Pre-commit Hooks
+
+The project uses pre-commit hooks for code quality:
+
+```bash
+pre-commit install
+pre-commit run --all-files
+```
+
 ## Contribution
 
 To contribute to this project, follow these steps:
 
-1. Create a `.env` file in the root directory with the following content:
+1. **Fork the repository** and create a feature branch
 
-    ```plaintext
-    OTTERAI_USERNAME=""
-    OTTERAI_PASSWORD=""
-    TEST_OTTERAI_SPEECH_OTID=""
-    ```
+2. **Setup development environment**:
+   ```bash
+   ./run.sh
+   ```
 
-    - Replace `OTTERAI_USERNAME` and `OTTERAI_PASSWORD` with your Otter.ai credentials.
-    - Replace `TEST_OTTERAI_SPEECH_OTID` with the ID of a speech you create on Otter.ai. This is required for the tests to pass.
+3. **For integration testing** (optional), create a `.env` file:
+   ```plaintext
+   OTTERAI_USERNAME=""
+   OTTERAI_PASSWORD=""
+   TEST_OTTERAI_SPEECH_OTID=""
+   ```
+   
+   - Replace with your Otter.ai credentials
+   - Replace `TEST_OTTERAI_SPEECH_OTID` with an actual speech ID from your account
+   - **Note**: Only needed if you want to run integration tests
 
-2. To run the tests and the `main.py` file, execute the `run.sh` script:
+4. **Run tests**:
+   ```bash
+   # Unit tests only (recommended)
+   pytest tests/ -m 'not integration'
+   
+   # Individual integration test (if needed)
+   pytest tests/test_otterai.py::test_get_user -s
+   ```
 
-    ```bash
-    ./run.sh
-    ```
+5. **Code quality**:
+   ```bash
+   # Format code
+   black .
+   
+   # Run pre-commit hooks
+   pre-commit run --all-files
+   ```
 
-3. Ensure all tests pass and make necessary updates to the tests if you modify or add functionality.
-
-4. Submit a pull request with a clear description of your changes.
+6. **Submit a pull request** with:
+   - Clear description of changes
+   - Updated tests if adding functionality
+   - All unit tests passing

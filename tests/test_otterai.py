@@ -21,34 +21,6 @@ assert TEST_SPEECH_OTID is not None, "TEST_OTTERAI_SPEECH_OTID is not set in .en
 DOWNLOAD_DIR = "test_downloads"
 
 
-@pytest.fixture(scope="module", autouse=True)
-def setup_download_dir():
-    os.makedirs(DOWNLOAD_DIR, exist_ok=True)
-    yield
-
-    # shutil.rmtree(DOWNLOAD_DIR)
-
-
-@pytest.fixture
-def otterai_instance():
-    return OtterAI()
-
-
-@pytest.fixture
-def authenticated_otterai_instance():
-    otter = OtterAI()
-    username = os.getenv("OTTERAI_USERNAME")
-    password = os.getenv("OTTERAI_PASSWORD")
-
-    assert username is not None, "OTTERAI_USERNAME is not set in .env"
-    assert password is not None, "OTTERAI_PASSWORD is not set in .env"
-
-    response = otter.login(username, password)
-    assert response["status"] == requests.codes.ok, "Failed to log in"
-
-    return otter
-
-
 # Login Tests
 def test_login(otterai_instance):
     username = os.getenv("OTTERAI_USERNAME")
