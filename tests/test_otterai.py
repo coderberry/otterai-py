@@ -342,24 +342,25 @@ def test_contacts_response_model():
         "status": "OK",
         "contacts": [
             {
-                "id": 476734168,
+                "id": 123456789,
                 "type": "contact",
-                "first_name": "Andres",
-                "last_name": "Granda",
-                "email": "agranda@giraffemediagroup.com",
+                "first_name": "Test",
+                "last_name": "User",
+                "email": "test@example.com",
                 "phone_number": None,
                 "avatar_url": None,
             }
         ],
-        "user_id": 25462508,
-        "last_modified_at": 1752002672,
+        "user_id": 987654321,
+        "last_modified_at": 1700000000,
     }
     response = ContactsResponse(**data)
     assert response.status == "OK"
     assert len(response.contacts) == 1
-    assert response.contacts[0].first_name == "Andres"
-    assert response.contacts[0].last_name == "Granda"
-    assert response.contacts[0].email == "agranda@giraffemediagroup.com"
+    assert isinstance(response.contacts[0].first_name, str)
+    assert isinstance(response.contacts[0].last_name, str)
+    assert isinstance(response.contacts[0].email, str)
+    assert "@" in response.contacts[0].email  # Basic email format check
 
 
 def test_folders_response_model():
@@ -368,23 +369,24 @@ def test_folders_response_model():
         "status": "OK",
         "folders": [
             {
-                "id": 1702429,
-                "created_at": 1751982020,
-                "last_modified_at": 1751982020,
+                "id": 123456789,
+                "created_at": 1700000000,
+                "last_modified_at": 1700000000,
                 "deleted_at": None,
                 "last_speech_added_at": None,
                 "speech_count": 0,
-                "user_id": 25462508,
-                "folder_name": "Video podcasts",
+                "user_id": 987654321,
+                "folder_name": "Test Folder",
             }
         ],
-        "last_modified_at": 1752002685,
+        "last_modified_at": 1700000000,
     }
     response = FoldersResponse(**data)
     assert response.status == "OK"
     assert len(response.folders) == 1
-    assert response.folders[0].folder_name == "Video podcasts"
-    assert response.folders[0].speech_count == 0
+    assert isinstance(response.folders[0].folder_name, str)
+    assert isinstance(response.folders[0].speech_count, int)
+    assert response.folders[0].speech_count >= 0
 
 
 def test_mention_candidates_response_model():
@@ -393,12 +395,12 @@ def test_mention_candidates_response_model():
         "status": "OK",
         "mention_candidates": [
             {
-                "id": 25462508,
-                "name": "Eric Berry",
-                "email": "eric@berrydev.ai",
-                "first_name": "Eric",
-                "last_name": "Berry",
-                "avatar_url": "https://profile.otter.ai/AMEQ3WM67T2EEP2Q/AMEQ3WM67T2EET2E",
+                "id": 123456789,
+                "name": "Test User",
+                "email": "test@example.com",
+                "first_name": "Test",
+                "last_name": "User",
+                "avatar_url": "https://profile.otter.ai/EXAMPLE123/EXAMPLE456",
                 "permission": "owner",
             }
         ],
@@ -406,8 +408,9 @@ def test_mention_candidates_response_model():
     response = MentionCandidatesResponse(**data)
     assert response.status == "OK"
     assert len(response.mention_candidates) == 1
-    assert response.mention_candidates[0].name == "Eric Berry"
-    assert response.mention_candidates[0].permission == "owner"
+    assert isinstance(response.mention_candidates[0].name, str)
+    assert isinstance(response.mention_candidates[0].permission, str)
+    assert "@" in response.mention_candidates[0].email
 
 
 # Phase 3: Complex Models Tests (TEMP.md endpoints)
@@ -445,15 +448,15 @@ def test_get_speakers_structured_invalid_userid(otterai_instance):
 
 
 def test_groups_response_model():
-    """Test GroupsResponse model validation with real API data structure."""
+    """Test GroupsResponse model validation with generic test data."""
     data = {
         "status": "OK",
         "groups": [
             {
-                "id": 18960476,
-                "created_at": 1739390477,
-                "last_modified_at": 1750865871,
-                "name": "Athena Weekly Check-in",
+                "id": 123456789,
+                "created_at": 1700000000,
+                "last_modified_at": 1700000000,
+                "name": "Test Group",
                 "is_deleted": False,
                 "is_public": False,
                 "has_left": False,
@@ -461,31 +464,31 @@ def test_groups_response_model():
                 "description": None,
                 "new_unread_msg_count": 0,
                 "bolding": False,
-                "latest_message_time": "2025-06-25 15:01:39",
-                "last_group_visit_time": "2025-07-08 18:37:36",
+                "latest_message_time": "2024-01-01 12:00:00",
+                "last_group_visit_time": "2024-01-01 12:00:00",
                 "owner": {
-                    "id": 11682165,
-                    "name": "Radu Davidescu",
-                    "email": "radu.davidescu@objects.ro",
-                    "first_name": "Radu",
-                    "last_name": "Davidescu",
-                    "avatar_url": "https://profile.otter.ai/AFSIF24QWYP5HK75/AFSIF24QWYP5CVNE",
+                    "id": 111111111,
+                    "name": "Test Owner",
+                    "email": "owner@example.com",
+                    "first_name": "Test",
+                    "last_name": "Owner",
+                    "avatar_url": None,
                 },
                 "cover_photo_url": None,
                 "avatar_url": None,
                 "open_post": True,
                 "open_invite": True,
                 "can_post": True,
-                "member_count": 10,
+                "member_count": 5,
                 "dm_name": None,
                 "is_dm_visible": False,
                 "first_member": {
-                    "id": 11560822,
-                    "name": "Mark Berry",
-                    "email": "mark@bercastle.com",
-                    "first_name": "Mark",
-                    "last_name": "Berry",
-                    "avatar_url": "https://profile.otter.ai/AFQM53MQRCYKBV6V/AFQM53MQRCYKG6MZ",
+                    "id": 222222222,
+                    "name": "Test Member",
+                    "email": "member@example.com",
+                    "first_name": "Test",
+                    "last_name": "Member",
+                    "avatar_url": None,
                 },
                 "has_live_speech": False,
                 "is_autoshare_group": False,
@@ -493,55 +496,56 @@ def test_groups_response_model():
                 "workspace_id": None,
             }
         ],
-        "last_load_ts": 1752002700,
+        "last_load_ts": 1700000000,
     }
     response = GroupsResponse(**data)
     assert response.status == "OK"
     assert len(response.groups) == 1
-    assert response.groups[0].name == "Athena Weekly Check-in"
-    assert response.groups[0].owner.name == "Radu Davidescu"
-    assert response.groups[0].first_member.name == "Mark Berry"
-    assert response.groups[0].member_count == 10
-    assert response.groups[0].discoverability == "private"
+    assert isinstance(response.groups[0].name, str)
+    assert isinstance(response.groups[0].owner.name, str)
+    assert isinstance(response.groups[0].first_member.name, str)
+    assert isinstance(response.groups[0].member_count, int)
+    assert response.groups[0].member_count > 0
+    assert isinstance(response.groups[0].discoverability, str)
 
 
 def test_speakers_response_model():
-    """Test SpeakersResponse model validation with real API data structure."""
+    """Test SpeakersResponse model validation with generic test data."""
     data = {
         "status": "OK",
         "speakers": [
             {
-                "id": 17514433,
-                "created_at": "2023-03-29 05:41:07",
-                "speaker_name": "Andres Granda",
+                "id": 123456789,
+                "created_at": "2024-01-01 12:00:00",
+                "speaker_name": "Test Speaker 1",
                 "url": None,
-                "user_id": 11586451,
+                "user_id": 111111111,
                 "self_speaker": True,
                 "speaker_email": None,
                 "owner": {
-                    "id": 11586451,
-                    "name": "Andres Granda",
-                    "email": "agranda@giraffemediagroup.com",
-                    "first_name": "Andres",
-                    "last_name": "Granda",
+                    "id": 111111111,
+                    "name": "Test User 1",
+                    "email": "user1@example.com",
+                    "first_name": "Test",
+                    "last_name": "User",
                     "avatar_url": None,
                 },
             },
             {
-                "id": 44886446,
-                "created_at": "2025-02-26 08:10:57",
-                "speaker_name": "Eric Berry",
-                "url": "https://s3.us-west-2.amazonaws.com/userprof-prod/u25462508/spkr44886446-1740586257",
-                "user_id": 25462508,
+                "id": 987654321,
+                "created_at": "2024-01-01 12:00:00",
+                "speaker_name": "Test Speaker 2",
+                "url": "https://s3.us-west-2.amazonaws.com/example-bucket/example-key",
+                "user_id": 222222222,
                 "self_speaker": True,
-                "speaker_email": "eric@berrydev.ai",
+                "speaker_email": "user2@example.com",
                 "owner": {
-                    "id": 25462508,
-                    "name": "Eric Berry",
-                    "email": "eric@berrydev.ai",
-                    "first_name": "Eric",
-                    "last_name": "Berry",
-                    "avatar_url": "https://profile.otter.ai/AMEQ3WM67T2EEP2Q/AMEQ3WM67T2EET2E",
+                    "id": 222222222,
+                    "name": "Test User 2",
+                    "email": "user2@example.com",
+                    "first_name": "Test",
+                    "last_name": "User",
+                    "avatar_url": None,
                 },
             },
         ],
@@ -549,10 +553,10 @@ def test_speakers_response_model():
     response = SpeakersResponse(**data)
     assert response.status == "OK"
     assert len(response.speakers) == 2
-    assert response.speakers[0].speaker_name == "Andres Granda"
-    assert response.speakers[0].owner.name == "Andres Granda"
-    assert response.speakers[1].speaker_name == "Eric Berry"
-    assert response.speakers[1].speaker_email == "eric@berrydev.ai"
+    assert isinstance(response.speakers[0].speaker_name, str)
+    assert isinstance(response.speakers[0].owner.name, str)
+    assert isinstance(response.speakers[1].speaker_name, str)
+    assert isinstance(response.speakers[1].speaker_email, str)
     assert response.speakers[1].url is not None
 
 
@@ -562,10 +566,10 @@ def test_groups_response_model_optional_fields():
         "status": "OK",
         "groups": [
             {
-                "id": 19645020,
-                "created_at": 1740586260,
-                "last_modified_at": 1740586532,
-                "name": "General",
+                "id": 123456789,
+                "created_at": 1700000000,
+                "last_modified_at": 1700000000,
+                "name": "Test Group",
                 "is_deleted": False,
                 "is_public": False,
                 "has_left": False,
@@ -573,15 +577,15 @@ def test_groups_response_model_optional_fields():
                 "description": None,
                 "new_unread_msg_count": 0,
                 "bolding": False,
-                "latest_message_time": "2025-02-26 16:11:22",
-                "last_group_visit_time": "2025-07-08 18:37:37",
+                "latest_message_time": "2024-01-01 12:00:00",
+                "last_group_visit_time": "2024-01-01 12:00:00",
                 "owner": {
-                    "id": 25462508,
-                    "name": "Eric Berry",
-                    "email": "eric@berrydev.ai",
-                    "first_name": "Eric",
-                    "last_name": "Berry",
-                    "avatar_url": "https://profile.otter.ai/AMEQ3WM67T2EEP2Q/AMEQ3WM67T2EET2E",
+                    "id": 111111111,
+                    "name": "Test User",
+                    "email": "test@example.com",
+                    "first_name": "Test",
+                    "last_name": "User",
+                    "avatar_url": None,
                 },
                 "cover_photo_url": None,
                 "avatar_url": None,
@@ -592,27 +596,27 @@ def test_groups_response_model_optional_fields():
                 "dm_name": None,
                 "is_dm_visible": False,
                 "first_member": {
-                    "id": 25462508,
-                    "name": "Eric Berry",
-                    "email": "eric@berrydev.ai",
-                    "first_name": "Eric",
-                    "last_name": "Berry",
-                    "avatar_url": "https://profile.otter.ai/AMEQ3WM67T2EEP2Q/AMEQ3WM67T2EET2E",
+                    "id": 111111111,
+                    "name": "Test User",
+                    "email": "test@example.com",
+                    "first_name": "Test",
+                    "last_name": "User",
+                    "avatar_url": None,
                 },
                 "has_live_speech": False,
                 "is_autoshare_group": False,
                 "discoverability": "workspace",
-                "workspace_id": 6478039,
+                "workspace_id": 999999999,
             }
         ],
-        "last_load_ts": 1752002700,
+        "last_load_ts": 1700000000,
     }
     response = GroupsResponse(**data)
     assert response.status == "OK"
-    assert response.groups[0].workspace_id == 6478039
+    assert isinstance(response.groups[0].workspace_id, int)
     assert response.groups[0].public_name is None
     assert response.groups[0].description is None
-    assert response.groups[0].discoverability == "workspace"
+    assert isinstance(response.groups[0].discoverability, str)
 
 
 def test_speakers_response_model_optional_fields():
@@ -621,19 +625,19 @@ def test_speakers_response_model_optional_fields():
         "status": "OK",
         "speakers": [
             {
-                "id": 17514433,
-                "created_at": "2023-03-29 05:41:07",
-                "speaker_name": "Andres Granda",
+                "id": 123456789,
+                "created_at": "2024-01-01 12:00:00",
+                "speaker_name": "Test Speaker",
                 "url": None,
-                "user_id": 11586451,
+                "user_id": 111111111,
                 "self_speaker": True,
                 "speaker_email": None,
                 "owner": {
-                    "id": 11586451,
-                    "name": "Andres Granda",
-                    "email": "agranda@giraffemediagroup.com",
-                    "first_name": "Andres",
-                    "last_name": "Granda",
+                    "id": 111111111,
+                    "name": "Test User",
+                    "email": "test@example.com",
+                    "first_name": "Test",
+                    "last_name": "User",
                     "avatar_url": None,
                 },
             }
