@@ -6,11 +6,14 @@ from requests_toolbelt.multipart.encoder import MultipartEncoder
 from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
 
 from .models import (
+    AbstractSummaryResponse,  # Phase 4 models
+    ActionItemsResponse,
     ContactsResponse,
     FoldersResponse,
-    MentionCandidatesResponse,
     GroupsResponse,
+    MentionCandidatesResponse,
     SpeakersResponse,
+    SpeechTemplatesResponse,
 )
 
 
@@ -415,3 +418,73 @@ class OtterAI:
             raise OtterAIException(f"Failed to get speakers: {response.status_code}")
 
         return SpeakersResponse(**response.json())
+
+    # Phase 4: Speech Templates and Action Items - Structured Methods
+
+    def get_speech_templates_structured(self):
+        """
+        Get all speech templates with structured response.
+
+        Returns:
+            SpeechTemplatesResponse: Structured response containing list of SpeechTemplate objects
+
+        Raises:
+            OtterAIException: If request fails
+        """
+        templates_url = OtterAI.API_BASE_URL + "speech_templates"
+        response = self._make_request("GET", templates_url)
+
+        if response.status_code != 200:
+            raise OtterAIException(
+                f"Failed to get speech templates: {response.status_code}"
+            )
+
+        return SpeechTemplatesResponse(**response.json())
+
+    def get_speech_action_items_structured(self, otid: str):
+        """
+        Get speech action items with structured response.
+
+        Args:
+            otid (str): Speech OTID
+
+        Returns:
+            ActionItemsResponse: Structured response containing list of ActionItem objects
+
+        Raises:
+            OtterAIException: If request fails
+        """
+        action_items_url = OtterAI.API_BASE_URL + "speech_action_items"
+        payload = {"otid": otid}
+        response = self._make_request("GET", action_items_url, params=payload)
+
+        if response.status_code != 200:
+            raise OtterAIException(
+                f"Failed to get speech action items: {response.status_code}"
+            )
+
+        return ActionItemsResponse(**response.json())
+
+    def get_abstract_summary_structured(self, otid: str):
+        """
+        Get abstract summary with structured response.
+
+        Args:
+            otid (str): Speech OTID
+
+        Returns:
+            AbstractSummaryResponse: Structured response containing AbstractSummaryData object
+
+        Raises:
+            OtterAIException: If request fails
+        """
+        summary_url = OtterAI.API_BASE_URL + "abstract_summary"
+        payload = {"otid": otid}
+        response = self._make_request("GET", summary_url, params=payload)
+
+        if response.status_code != 200:
+            raise OtterAIException(
+                f"Failed to get abstract summary: {response.status_code}"
+            )
+
+        return AbstractSummaryResponse(**response.json())

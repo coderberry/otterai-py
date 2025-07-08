@@ -1,17 +1,27 @@
-from otterai.otterai import OtterAI, OtterAIException
 from otterai.models import (
-    User,
-    Workspace,
-    Permission,
+    AbstractSummaryData,  # Phase 4 models
+    AbstractSummaryResponse,
+    ActionItem,
+    ActionItemsResponse,
     BaseResponse,
     Contact,
     ContactsResponse,
     Folder,
     FoldersResponse,
-    MentionCandidate,
-    MentionCandidatesResponse,
     Group,
     GroupsResponse,
+    MentionCandidate,
+    MentionCandidatesResponse,
+    Permission,
     Speaker,
     SpeakersResponse,
+    SpeechTemplate,
+    SpeechTemplatePermissions,
+    SpeechTemplatesData,
+    SpeechTemplatesResponse,
+    TemplateCreator,
+    TemplatePermissions,
+    User,
+    Workspace,
 )
+from otterai.otterai import OtterAI, OtterAIException

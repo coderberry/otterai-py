@@ -4,10 +4,12 @@ Pytest configuration and fixtures for OtterAI tests.
 
 import os
 import warnings
+
 import pytest
-from dotenv import load_dotenv
-from otterai.otterai import OtterAI
 import requests
+from dotenv import load_dotenv
+
+from otterai.otterai import OtterAI
 
 load_dotenv(dotenv_path=".env")
 
