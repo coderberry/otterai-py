@@ -3,13 +3,18 @@ import xml.etree.ElementTree as ET
 
 import requests
 from requests_toolbelt.multipart.encoder import MultipartEncoder
-from tenacity import (retry, retry_if_exception, stop_after_attempt,
-                      wait_exponential)
+from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
 
-from .models import (AbstractSummaryResponse,  # Phase 4 models
-                     ActionItemsResponse, ContactsResponse, FoldersResponse,
-                     GroupsResponse, MentionCandidatesResponse,
-                     SpeakersResponse, SpeechTemplatesResponse)
+from .models import (
+    AbstractSummaryResponse,  # Phase 4 models
+    ActionItemsResponse,
+    ContactsResponse,
+    FoldersResponse,
+    GroupsResponse,
+    MentionCandidatesResponse,
+    SpeakersResponse,
+    SpeechTemplatesResponse,
+)
 
 
 class OtterAIException(Exception):

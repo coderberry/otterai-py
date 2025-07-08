@@ -11,11 +11,16 @@ import requests
 from dotenv import load_dotenv
 from tenacity import RetryError
 
-from otterai.models import (AbstractSummaryResponse,  # Phase 4 models
-                            ActionItemsResponse, ContactsResponse,
-                            FoldersResponse, GroupsResponse,
-                            MentionCandidatesResponse, SpeakersResponse,
-                            SpeechTemplatesResponse)
+from otterai.models import (
+    AbstractSummaryResponse,  # Phase 4 models
+    ActionItemsResponse,
+    ContactsResponse,
+    FoldersResponse,
+    GroupsResponse,
+    MentionCandidatesResponse,
+    SpeakersResponse,
+    SpeechTemplatesResponse,
+)
 from otterai.otterai import OtterAI, OtterAIException
 
 load_dotenv(dotenv_path=".env")
