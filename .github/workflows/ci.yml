@@ -10,10 +10,8 @@ jobs:
     build-and-test:
         runs-on: ubuntu-latest
 
-        env:
-            OTTERAI_USERNAME: ${{ secrets.OTTERAI_USERNAME }}
-            OTTERAI_PASSWORD: ${{ secrets.OTTERAI_PASSWORD }}
-            TEST_OTTERAI_SPEECH_OTID: ${{ secrets.TEST_OTTERAI_SPEECH_OTID }}
+        # Note: Environment variables for integration tests are not needed
+        # since we only run unit tests in CI to avoid rate limiting
 
         steps:
             - name: Checkout code
@@ -41,11 +39,13 @@ jobs:
                   pip install --upgrade pip
                   pip install .[dev]
 
-            - name: Create .env file
+            - name: Create placeholder .env file
               run: |
-                  echo "OTTERAI_USERNAME=${{ secrets.OTTERAI_USERNAME }}" >> .env
-                  echo "OTTERAI_PASSWORD=${{ secrets.OTTERAI_PASSWORD }}" >> .env
-                  echo "TEST_OTTERAI_SPEECH_OTID=${{ secrets.TEST_OTTERAI_SPEECH_OTID }}" >> .env
+                  echo "# Placeholder .env file for CI" > .env
+                  echo "# Integration tests are skipped to avoid rate limiting" >> .env
+                  echo "OTTERAI_USERNAME=dummy" >> .env
+                  echo "OTTERAI_PASSWORD=dummy" >> .env
+                  echo "TEST_OTTERAI_SPEECH_OTID=dummy" >> .env
 
             - name: Run pre-commit checks
               env:
@@ -55,14 +55,18 @@ jobs:
                   pre-commit install
                   pre-commit run --all-files
 
-            - name: Debug Environment Variables
-              run: env | grep OTTERAI_
-
-            - name: Run tests with coverage
+            - name: Run unit tests with coverage
               run: |
                   source myenv/bin/activate
                   pytest -s \
                     --cov=otterai \
                     --cov-report=term-missing \
                     --cov-report=lcov:lcov.info \
-                    --cov-report=xml:cov.xml
+                    --cov-report=xml:cov.xml \
+                    -m "not integration"
+
+            - name: Upload coverage to Codecov
+              uses: codecov/codecov-action@v3
+              with:
+                  files: ./cov.xml
+                  fail_ci_if_error: false
