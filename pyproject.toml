@@ -33,6 +33,10 @@ packages = ["otterai"]
 [tool.pytest.ini_options]
 minversion = "8.0"
 addopts = "--cov=otterai --cov-report=xml"
+markers = [
+    "integration: marks tests as integration tests that hit real API",
+    "slow: marks tests as slow running",
+]
 
 [tool.coverage.run]
 branch = true

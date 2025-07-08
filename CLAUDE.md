@@ -6,8 +6,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Setup and Testing
 - **Setup development environment**: `./run.sh` - Sets up virtual environment, installs dependencies, runs pre-commit hooks, executes tests with coverage, and runs the main application
-- **Run tests**: `pytest -s --cov=otterai --cov-report=term-missing --cov-report=lcov:lcov.info --cov-report=xml:cov.xml`
-- **Run single test**: `pytest -s tests/test_otterai.py::test_function_name`
+- **Run unit tests only**: `pytest tests/ -m 'not integration'` (recommended for regular development)
+- **Run single integration test**: `pytest tests/test_otterai.py::test_get_user -s`
+- **Run all tests with coverage**: `pytest -s --cov=otterai --cov-report=term-missing --cov-report=lcov:lcov.info --cov-report=xml:cov.xml`
+- **⚠️ Warning**: Running all tests together will cause 429 rate limit errors from Otter.ai API
 - **Code formatting**: `black .` (configured for line length 88, Python 3.9+)
 - **Pre-commit hooks**: `pre-commit run --all-files`
 
