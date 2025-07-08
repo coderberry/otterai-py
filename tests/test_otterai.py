@@ -311,10 +311,14 @@ def test_get_folders_structured_invalid_userid(otterai_instance):
         otterai_instance.get_folders_structured()
 
 
-def test_get_speech_mention_candidates_structured_success(authenticated_otterai_instance):
+def test_get_speech_mention_candidates_structured_success(
+    authenticated_otterai_instance,
+):
     """Test get_speech_mention_candidates_structured returns structured MentionCandidatesResponse."""
     otid = TEST_SPEECH_OTID
-    response = authenticated_otterai_instance.get_speech_mention_candidates_structured(otid)
+    response = authenticated_otterai_instance.get_speech_mention_candidates_structured(
+        otid
+    )
     assert isinstance(response, MentionCandidatesResponse)
     assert response.status == "OK"
     assert hasattr(response, "mention_candidates")
@@ -334,11 +338,11 @@ def test_contacts_response_model():
                 "last_name": "Granda",
                 "email": "agranda@giraffemediagroup.com",
                 "phone_number": None,
-                "avatar_url": None
+                "avatar_url": None,
             }
         ],
         "user_id": 25462508,
-        "last_modified_at": 1752002672
+        "last_modified_at": 1752002672,
     }
     response = ContactsResponse(**data)
     assert response.status == "OK"
@@ -361,10 +365,10 @@ def test_folders_response_model():
                 "last_speech_added_at": None,
                 "speech_count": 0,
                 "user_id": 25462508,
-                "folder_name": "Video podcasts"
+                "folder_name": "Video podcasts",
             }
         ],
-        "last_modified_at": 1752002685
+        "last_modified_at": 1752002685,
     }
     response = FoldersResponse(**data)
     assert response.status == "OK"
@@ -385,9 +389,9 @@ def test_mention_candidates_response_model():
                 "first_name": "Eric",
                 "last_name": "Berry",
                 "avatar_url": "https://profile.otter.ai/AMEQ3WM67T2EEP2Q/AMEQ3WM67T2EET2E",
-                "permission": "owner"
+                "permission": "owner",
             }
-        ]
+        ],
     }
     response = MentionCandidatesResponse(**data)
     assert response.status == "OK"

@@ -305,10 +305,10 @@ class OtterAI:
     def get_contacts_structured(self):
         """
         Get all contacts with structured response.
-        
+
         Returns:
             ContactsResponse: Structured response containing list of Contact objects
-            
+
         Raises:
             OtterAIException: If userid is invalid
         """
@@ -317,19 +317,19 @@ class OtterAI:
             raise OtterAIException("userid is invalid")
         payload = {"userid": self._userid}
         response = self._make_request("GET", contacts_url, params=payload)
-        
+
         if response.status_code != 200:
             raise OtterAIException(f"Failed to get contacts: {response.status_code}")
-        
+
         return ContactsResponse(**response.json())
 
     def get_folders_structured(self):
         """
         Get all folders with structured response.
-        
+
         Returns:
             FoldersResponse: Structured response containing list of Folder objects
-            
+
         Raises:
             OtterAIException: If userid is invalid
         """
@@ -338,30 +338,32 @@ class OtterAI:
             raise OtterAIException("userid is invalid")
         payload = {"userid": self._userid}
         response = self._make_request("GET", folders_url, params=payload)
-        
+
         if response.status_code != 200:
             raise OtterAIException(f"Failed to get folders: {response.status_code}")
-        
+
         return FoldersResponse(**response.json())
 
     def get_speech_mention_candidates_structured(self, otid):
         """
         Get mention candidates for a speech with structured response.
-        
+
         Args:
             otid (str): The speech ID
-            
+
         Returns:
             MentionCandidatesResponse: Structured response containing list of MentionCandidate objects
-            
+
         Raises:
             OtterAIException: If the request fails
         """
         mention_candidates_url = OtterAI.API_BASE_URL + "speech_mention_candidates"
         payload = {"otid": otid}
         response = self._make_request("GET", mention_candidates_url, params=payload)
-        
+
         if response.status_code != 200:
-            raise OtterAIException(f"Failed to get mention candidates: {response.status_code}")
-        
+            raise OtterAIException(
+                f"Failed to get mention candidates: {response.status_code}"
+            )
+
         return MentionCandidatesResponse(**response.json())
