@@ -133,6 +133,20 @@ class InteractiveRunner:
                 "requires_otid": True,
                 "method": self.client.get_speech_mention_candidates_structured,
             },
+            "list_groups_structured": {
+                "name": "list_groups_structured",
+                "description": "Get groups with structured response (TEMP.md endpoint)",
+                "requires_auth": True,
+                "requires_otid": False,
+                "method": self.client.list_groups_structured,
+            },
+            "get_speakers_structured": {
+                "name": "get_speakers_structured",
+                "description": "Get speakers with structured response",
+                "requires_auth": True,
+                "requires_otid": False,
+                "method": self.client.get_speakers_structured,
+            },
             "create_speaker": {
                 "name": "create_speaker",
                 "description": "Create a new speaker",

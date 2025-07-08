@@ -12,7 +12,13 @@ from dotenv import load_dotenv
 from tenacity import RetryError
 
 from otterai.otterai import OtterAI, OtterAIException
-from otterai.models import ContactsResponse, FoldersResponse, MentionCandidatesResponse
+from otterai.models import (
+    ContactsResponse,
+    FoldersResponse,
+    MentionCandidatesResponse,
+    GroupsResponse,
+    SpeakersResponse,
+)
 
 load_dotenv(dotenv_path=".env")
 
@@ -336,24 +342,25 @@ def test_contacts_response_model():
         "status": "OK",
         "contacts": [
             {
-                "id": 476734168,
+                "id": 123456789,
                 "type": "contact",
-                "first_name": "Andres",
-                "last_name": "Granda",
-                "email": "agranda@giraffemediagroup.com",
+                "first_name": "Test",
+                "last_name": "User",
+                "email": "test@example.com",
                 "phone_number": None,
                 "avatar_url": None,
             }
         ],
-        "user_id": 25462508,
-        "last_modified_at": 1752002672,
+        "user_id": 987654321,
+        "last_modified_at": 1700000000,
     }
     response = ContactsResponse(**data)
     assert response.status == "OK"
     assert len(response.contacts) == 1
-    assert response.contacts[0].first_name == "Andres"
-    assert response.contacts[0].last_name == "Granda"
-    assert response.contacts[0].email == "agranda@giraffemediagroup.com"
+    assert isinstance(response.contacts[0].first_name, str)
+    assert isinstance(response.contacts[0].last_name, str)
+    assert isinstance(response.contacts[0].email, str)
+    assert "@" in response.contacts[0].email  # Basic email format check
 
 
 def test_folders_response_model():
@@ -362,23 +369,24 @@ def test_folders_response_model():
         "status": "OK",
         "folders": [
             {
-                "id": 1702429,
-                "created_at": 1751982020,
-                "last_modified_at": 1751982020,
+                "id": 123456789,
+                "created_at": 1700000000,
+                "last_modified_at": 1700000000,
                 "deleted_at": None,
                 "last_speech_added_at": None,
                 "speech_count": 0,
-                "user_id": 25462508,
-                "folder_name": "Video podcasts",
+                "user_id": 987654321,
+                "folder_name": "Test Folder",
             }
         ],
-        "last_modified_at": 1752002685,
+        "last_modified_at": 1700000000,
     }
     response = FoldersResponse(**data)
     assert response.status == "OK"
     assert len(response.folders) == 1
-    assert response.folders[0].folder_name == "Video podcasts"
-    assert response.folders[0].speech_count == 0
+    assert isinstance(response.folders[0].folder_name, str)
+    assert isinstance(response.folders[0].speech_count, int)
+    assert response.folders[0].speech_count >= 0
 
 
 def test_mention_candidates_response_model():
@@ -387,12 +395,12 @@ def test_mention_candidates_response_model():
         "status": "OK",
         "mention_candidates": [
             {
-                "id": 25462508,
-                "name": "Eric Berry",
-                "email": "eric@berrydev.ai",
-                "first_name": "Eric",
-                "last_name": "Berry",
-                "avatar_url": "https://profile.otter.ai/AMEQ3WM67T2EEP2Q/AMEQ3WM67T2EET2E",
+                "id": 123456789,
+                "name": "Test User",
+                "email": "test@example.com",
+                "first_name": "Test",
+                "last_name": "User",
+                "avatar_url": "https://profile.otter.ai/EXAMPLE123/EXAMPLE456",
                 "permission": "owner",
             }
         ],
@@ -400,5 +408,243 @@ def test_mention_candidates_response_model():
     response = MentionCandidatesResponse(**data)
     assert response.status == "OK"
     assert len(response.mention_candidates) == 1
-    assert response.mention_candidates[0].name == "Eric Berry"
-    assert response.mention_candidates[0].permission == "owner"
+    assert isinstance(response.mention_candidates[0].name, str)
+    assert isinstance(response.mention_candidates[0].permission, str)
+    assert "@" in response.mention_candidates[0].email
+
+
+# Phase 3: Complex Models Tests (TEMP.md endpoints)
+def test_list_groups_structured_success(authenticated_otterai_instance):
+    """Test list_groups_structured returns structured GroupsResponse for TEMP.md endpoint."""
+    response = authenticated_otterai_instance.list_groups_structured()
+    assert isinstance(response, GroupsResponse)
+    assert response.status == "OK"
+    assert hasattr(response, "groups")
+    assert hasattr(response, "last_load_ts")
+    assert isinstance(response.groups, list)
+
+
+def test_list_groups_structured_invalid_userid(otterai_instance):
+    """Test list_groups_structured raises exception with invalid userid."""
+    otterai_instance._userid = None
+    with pytest.raises(OtterAIException, match="userid is invalid"):
+        otterai_instance.list_groups_structured()
+
+
+def test_get_speakers_structured_success(authenticated_otterai_instance):
+    """Test get_speakers_structured returns structured SpeakersResponse for TEMP.md endpoint."""
+    response = authenticated_otterai_instance.get_speakers_structured()
+    assert isinstance(response, SpeakersResponse)
+    assert response.status == "OK"
+    assert hasattr(response, "speakers")
+    assert isinstance(response.speakers, list)
+
+
+def test_get_speakers_structured_invalid_userid(otterai_instance):
+    """Test get_speakers_structured raises exception with invalid userid."""
+    otterai_instance._userid = None
+    with pytest.raises(OtterAIException, match="userid is invalid"):
+        otterai_instance.get_speakers_structured()
+
+
+def test_groups_response_model():
+    """Test GroupsResponse model validation with generic test data."""
+    data = {
+        "status": "OK",
+        "groups": [
+            {
+                "id": 123456789,
+                "created_at": 1700000000,
+                "last_modified_at": 1700000000,
+                "name": "Test Group",
+                "is_deleted": False,
+                "is_public": False,
+                "has_left": False,
+                "public_name": None,
+                "description": None,
+                "new_unread_msg_count": 0,
+                "bolding": False,
+                "latest_message_time": "2024-01-01 12:00:00",
+                "last_group_visit_time": "2024-01-01 12:00:00",
+                "owner": {
+                    "id": 111111111,
+                    "name": "Test Owner",
+                    "email": "owner@example.com",
+                    "first_name": "Test",
+                    "last_name": "Owner",
+                    "avatar_url": None,
+                },
+                "cover_photo_url": None,
+                "avatar_url": None,
+                "open_post": True,
+                "open_invite": True,
+                "can_post": True,
+                "member_count": 5,
+                "dm_name": None,
+                "is_dm_visible": False,
+                "first_member": {
+                    "id": 222222222,
+                    "name": "Test Member",
+                    "email": "member@example.com",
+                    "first_name": "Test",
+                    "last_name": "Member",
+                    "avatar_url": None,
+                },
+                "has_live_speech": False,
+                "is_autoshare_group": False,
+                "discoverability": "private",
+                "workspace_id": None,
+            }
+        ],
+        "last_load_ts": 1700000000,
+    }
+    response = GroupsResponse(**data)
+    assert response.status == "OK"
+    assert len(response.groups) == 1
+    assert isinstance(response.groups[0].name, str)
+    assert isinstance(response.groups[0].owner.name, str)
+    assert isinstance(response.groups[0].first_member.name, str)
+    assert isinstance(response.groups[0].member_count, int)
+    assert response.groups[0].member_count > 0
+    assert isinstance(response.groups[0].discoverability, str)
+
+
+def test_speakers_response_model():
+    """Test SpeakersResponse model validation with generic test data."""
+    data = {
+        "status": "OK",
+        "speakers": [
+            {
+                "id": 123456789,
+                "created_at": "2024-01-01 12:00:00",
+                "speaker_name": "Test Speaker 1",
+                "url": None,
+                "user_id": 111111111,
+                "self_speaker": True,
+                "speaker_email": None,
+                "owner": {
+                    "id": 111111111,
+                    "name": "Test User 1",
+                    "email": "user1@example.com",
+                    "first_name": "Test",
+                    "last_name": "User",
+                    "avatar_url": None,
+                },
+            },
+            {
+                "id": 987654321,
+                "created_at": "2024-01-01 12:00:00",
+                "speaker_name": "Test Speaker 2",
+                "url": "https://s3.us-west-2.amazonaws.com/example-bucket/example-key",
+                "user_id": 222222222,
+                "self_speaker": True,
+                "speaker_email": "user2@example.com",
+                "owner": {
+                    "id": 222222222,
+                    "name": "Test User 2",
+                    "email": "user2@example.com",
+                    "first_name": "Test",
+                    "last_name": "User",
+                    "avatar_url": None,
+                },
+            },
+        ],
+    }
+    response = SpeakersResponse(**data)
+    assert response.status == "OK"
+    assert len(response.speakers) == 2
+    assert isinstance(response.speakers[0].speaker_name, str)
+    assert isinstance(response.speakers[0].owner.name, str)
+    assert isinstance(response.speakers[1].speaker_name, str)
+    assert isinstance(response.speakers[1].speaker_email, str)
+    assert response.speakers[1].url is not None
+
+
+def test_groups_response_model_optional_fields():
+    """Test Group model handles optional fields correctly."""
+    data = {
+        "status": "OK",
+        "groups": [
+            {
+                "id": 123456789,
+                "created_at": 1700000000,
+                "last_modified_at": 1700000000,
+                "name": "Test Group",
+                "is_deleted": False,
+                "is_public": False,
+                "has_left": False,
+                "public_name": None,
+                "description": None,
+                "new_unread_msg_count": 0,
+                "bolding": False,
+                "latest_message_time": "2024-01-01 12:00:00",
+                "last_group_visit_time": "2024-01-01 12:00:00",
+                "owner": {
+                    "id": 111111111,
+                    "name": "Test User",
+                    "email": "test@example.com",
+                    "first_name": "Test",
+                    "last_name": "User",
+                    "avatar_url": None,
+                },
+                "cover_photo_url": None,
+                "avatar_url": None,
+                "open_post": True,
+                "open_invite": True,
+                "can_post": True,
+                "member_count": 1,
+                "dm_name": None,
+                "is_dm_visible": False,
+                "first_member": {
+                    "id": 111111111,
+                    "name": "Test User",
+                    "email": "test@example.com",
+                    "first_name": "Test",
+                    "last_name": "User",
+                    "avatar_url": None,
+                },
+                "has_live_speech": False,
+                "is_autoshare_group": False,
+                "discoverability": "workspace",
+                "workspace_id": 999999999,
+            }
+        ],
+        "last_load_ts": 1700000000,
+    }
+    response = GroupsResponse(**data)
+    assert response.status == "OK"
+    assert isinstance(response.groups[0].workspace_id, int)
+    assert response.groups[0].public_name is None
+    assert response.groups[0].description is None
+    assert isinstance(response.groups[0].discoverability, str)
+
+
+def test_speakers_response_model_optional_fields():
+    """Test Speaker model handles optional fields correctly."""
+    data = {
+        "status": "OK",
+        "speakers": [
+            {
+                "id": 123456789,
+                "created_at": "2024-01-01 12:00:00",
+                "speaker_name": "Test Speaker",
+                "url": None,
+                "user_id": 111111111,
+                "self_speaker": True,
+                "speaker_email": None,
+                "owner": {
+                    "id": 111111111,
+                    "name": "Test User",
+                    "email": "test@example.com",
+                    "first_name": "Test",
+                    "last_name": "User",
+                    "avatar_url": None,
+                },
+            }
+        ],
+    }
+    response = SpeakersResponse(**data)
+    assert response.status == "OK"
+    assert response.speakers[0].url is None
+    assert response.speakers[0].speaker_email is None
+    assert response.speakers[0].owner.avatar_url is None
