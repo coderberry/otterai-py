@@ -23,6 +23,7 @@ DOWNLOAD_DIR = "test_downloads"
 
 
 # Login Tests
+@pytest.mark.integration
 def test_login(otterai_instance):
     username = os.getenv("OTTERAI_USERNAME")
     password = os.getenv("OTTERAI_PASSWORD")
@@ -33,16 +34,19 @@ def test_login(otterai_instance):
     assert response["status"] == requests.codes.ok
 
 
+@pytest.mark.integration
 def test_login_invalid_username(otterai_instance):
     response = otterai_instance.login("invalid_username", os.getenv("OTTERAI_PASSWORD"))
     assert response["status"] != requests.codes.ok
 
 
+@pytest.mark.integration
 def test_login_invalid_password(otterai_instance):
     response = otterai_instance.login(os.getenv("OTTERAI_USERNAME"), "invalid_password")
     assert response["status"] != requests.codes.ok
 
 
+@pytest.mark.integration
 def test_login_invalid_credentials(otterai_instance):
     response = otterai_instance.login("invalid_username", "invalid_password")
     assert response["status"] != requests.codes.ok
