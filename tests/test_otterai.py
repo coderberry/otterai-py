@@ -11,14 +11,12 @@ import requests
 from dotenv import load_dotenv
 from tenacity import RetryError
 
+from otterai.models import (AbstractSummaryResponse,  # Phase 4 models
+                            ActionItemsResponse, ContactsResponse,
+                            FoldersResponse, GroupsResponse,
+                            MentionCandidatesResponse, SpeakersResponse,
+                            SpeechTemplatesResponse)
 from otterai.otterai import OtterAI, OtterAIException
-from otterai.models import (
-    ContactsResponse,
-    FoldersResponse,
-    MentionCandidatesResponse,
-    GroupsResponse,
-    SpeakersResponse,
-)
 
 load_dotenv(dotenv_path=".env")
 
@@ -648,3 +646,176 @@ def test_speakers_response_model_optional_fields():
     assert response.speakers[0].url is None
     assert response.speakers[0].speaker_email is None
     assert response.speakers[0].owner.avatar_url is None
+
+
+# Phase 4: Speech Templates and Action Items Tests
+def test_get_speech_templates_structured_success(authenticated_otterai_instance):
+    """Test get_speech_templates_structured returns structured SpeechTemplatesResponse."""
+    response = authenticated_otterai_instance.get_speech_templates_structured()
+    assert isinstance(response, SpeechTemplatesResponse)
+    assert response.status == "OK"
+    assert hasattr(response, "data")
+    assert hasattr(response.data, "permissions")
+    assert hasattr(response.data, "templates")
+    assert isinstance(response.data.templates, list)
+
+
+def test_get_speech_action_items_structured_success(authenticated_otterai_instance):
+    """Test get_speech_action_items_structured returns structured ActionItemsResponse."""
+    otid = TEST_SPEECH_OTID
+    response = authenticated_otterai_instance.get_speech_action_items_structured(otid)
+    assert isinstance(response, ActionItemsResponse)
+    assert response.status == "OK"
+    assert hasattr(response, "process_status")
+    assert hasattr(response, "speech_action_items")
+    assert isinstance(response.speech_action_items, list)
+
+
+def test_get_abstract_summary_structured_success(authenticated_otterai_instance):
+    """Test get_abstract_summary_structured returns structured AbstractSummaryResponse."""
+    otid = TEST_SPEECH_OTID
+    response = authenticated_otterai_instance.get_abstract_summary_structured(otid)
+    assert isinstance(response, AbstractSummaryResponse)
+    assert response.status == "OK"
+    assert hasattr(response, "process_status")
+    assert hasattr(response, "abstract_summary")
+    assert isinstance(response.abstract_summary.short_summary, str)
+
+
+# Unit tests for Phase 4 models
+def test_speech_templates_response_model():
+    """Test SpeechTemplatesResponse model validation with generic test data."""
+    data = {
+        "status": "OK",
+        "code": 200,
+        "data": {
+            "permissions": {
+                "can_create_personal_templates": True,
+                "can_create_workspace_templates": True,
+            },
+            "templates": [
+                {
+                    "id": 123456789,
+                    "name": "Test Template",
+                    "is_personal_template": False,
+                    "is_customized": False,
+                    "created_by": {"id": None, "name": "Test System"},
+                    "base_template_type": "general",
+                    "permissions": {
+                        "can_edit": True,
+                        "can_delete": False,
+                        "can_clone": True,
+                        "can_view": True,
+                        "can_apply": True,
+                    },
+                }
+            ],
+        },
+    }
+    response = SpeechTemplatesResponse(**data)
+    assert response.status == "OK"
+    assert response.data.permissions.can_create_personal_templates is True
+    assert len(response.data.templates) == 1
+    assert isinstance(response.data.templates[0].name, str)
+    assert isinstance(response.data.templates[0].permissions.can_edit, bool)
+    assert response.data.templates[0].created_by.id is None
+
+
+def test_action_items_response_model():
+    """Test ActionItemsResponse model validation with generic test data."""
+    data = {
+        "status": "OK",
+        "process_status": "finished",
+        "speech_action_items": [
+            {
+                "id": 123456789,
+                "created_at": 1700000000,
+                "last_modified_at": 1700000000,
+                "start_msec": 1000,
+                "end_msec": None,
+                "speech_otid": "test_otid_123",
+                "creator": None,
+                "text": "Test action item",
+                "assignee": {
+                    "id": 111111111,
+                    "name": "Test User",
+                    "email": "test@example.com",
+                    "first_name": "Test",
+                    "last_name": "User",
+                    "avatar_url": None,
+                },
+                "assigner": None,
+                "completed": False,
+                "uuid": "test-uuid-123",
+                "order": "test123",
+                "deleted_at": None,
+                "process_id": 987654321,
+            }
+        ],
+    }
+    response = ActionItemsResponse(**data)
+    assert response.status == "OK"
+    assert response.process_status == "finished"
+    assert len(response.speech_action_items) == 1
+    assert isinstance(response.speech_action_items[0].text, str)
+    assert response.speech_action_items[0].assignee.name == "Test User"
+    assert response.speech_action_items[0].end_msec is None
+    assert response.speech_action_items[0].completed is False
+
+
+def test_abstract_summary_response_model():
+    """Test AbstractSummaryResponse model validation with generic test data."""
+    data = {
+        "status": "OK",
+        "process_status": "finished",
+        "abstract_summary": {
+            "id": 123456789,
+            "status": "completed",
+            "speech_otid": "test_otid_123",
+            "items": [],
+            "short_summary": "This is a test summary of the speech content.",
+        },
+    }
+    response = AbstractSummaryResponse(**data)
+    assert response.status == "OK"
+    assert response.process_status == "finished"
+    assert isinstance(response.abstract_summary.short_summary, str)
+    assert response.abstract_summary.status == "completed"
+    assert isinstance(response.abstract_summary.items, list)
+    assert len(response.abstract_summary.items) == 0
+
+
+def test_speech_templates_response_model_optional_fields():
+    """Test SpeechTemplate model handles optional fields correctly."""
+    data = {
+        "status": "OK",
+        "code": 200,
+        "data": {
+            "permissions": {
+                "can_create_personal_templates": False,
+                "can_create_workspace_templates": False,
+            },
+            "templates": [
+                {
+                    "id": 123456789,
+                    "name": "Test Template",
+                    "is_personal_template": True,
+                    "is_customized": True,
+                    "created_by": {"id": 111111111, "name": "Test Creator"},
+                    "base_template_type": "custom",
+                    "permissions": {
+                        "can_edit": False,
+                        "can_delete": True,
+                        "can_clone": False,
+                        "can_view": True,
+                        "can_apply": False,
+                    },
+                }
+            ],
+        },
+    }
+    response = SpeechTemplatesResponse(**data)
+    assert response.status == "OK"
+    assert response.data.permissions.can_create_personal_templates is False
+    assert response.data.templates[0].is_personal_template is True
+    assert response.data.templates[0].created_by.id == 111111111

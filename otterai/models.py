@@ -5,7 +5,8 @@ This module provides base models and common data structures used across
 the OtterAI API endpoints.
 """
 
-from typing import Optional, List
+from typing import List, Optional
+
 from pydantic import BaseModel, Field
 
 
@@ -161,3 +162,112 @@ class SpeakersResponse(BaseResponse):
     """Response wrapper for speakers endpoint."""
 
     speakers: List[Speaker] = Field(..., description="List of speakers")
+
+
+# Phase 4: Speech Templates and Action Items Models
+
+
+class TemplatePermissions(BaseModel):
+    """Template-specific permissions model."""
+
+    can_edit: bool = Field(..., description="Can edit template")
+    can_delete: bool = Field(..., description="Can delete template")
+    can_clone: bool = Field(..., description="Can clone template")
+    can_view: bool = Field(..., description="Can view template")
+    can_apply: bool = Field(..., description="Can apply template")
+
+
+class TemplateCreator(BaseModel):
+    """Template creator information model."""
+
+    id: Optional[int] = Field(
+        None, description="Creator ID (null for system templates)"
+    )
+    name: str = Field(..., description="Creator name")
+
+
+class SpeechTemplate(BaseModel):
+    """Speech template model."""
+
+    id: int = Field(..., description="Unique template identifier")
+    name: str = Field(..., description="Template name")
+    is_personal_template: bool = Field(..., description="Whether template is personal")
+    is_customized: bool = Field(..., description="Whether template is customized")
+    created_by: TemplateCreator = Field(..., description="Template creator")
+    base_template_type: str = Field(..., description="Base template type")
+    permissions: TemplatePermissions = Field(..., description="Template permissions")
+
+
+class SpeechTemplatePermissions(BaseModel):
+    """Global speech template permissions model."""
+
+    can_create_personal_templates: bool = Field(
+        ..., description="Can create personal templates"
+    )
+    can_create_workspace_templates: bool = Field(
+        ..., description="Can create workspace templates"
+    )
+
+
+class SpeechTemplatesData(BaseModel):
+    """Data structure for speech templates response."""
+
+    permissions: SpeechTemplatePermissions = Field(
+        ..., description="Global template permissions"
+    )
+    templates: List[SpeechTemplate] = Field(..., description="List of speech templates")
+
+
+class SpeechTemplatesResponse(BaseResponse):
+    """Response wrapper for speech_templates endpoint."""
+
+    data: SpeechTemplatesData = Field(..., description="Speech templates data")
+    code: int = Field(..., description="HTTP status code")
+
+
+class ActionItem(BaseModel):
+    """Action item model."""
+
+    id: int = Field(..., description="Unique action item identifier")
+    created_at: int = Field(..., description="Creation timestamp")
+    last_modified_at: int = Field(..., description="Last modified timestamp")
+    start_msec: int = Field(..., description="Start time in milliseconds")
+    end_msec: Optional[int] = Field(None, description="End time in milliseconds")
+    speech_otid: str = Field(..., description="Speech OTID")
+    creator: Optional[User] = Field(None, description="Action item creator")
+    text: str = Field(..., description="Action item text")
+    assignee: Optional[User] = Field(None, description="Action item assignee")
+    assigner: Optional[User] = Field(None, description="Action item assigner")
+    completed: bool = Field(..., description="Whether action item is completed")
+    uuid: str = Field(..., description="Action item UUID")
+    order: str = Field(..., description="Action item order")
+    deleted_at: Optional[int] = Field(None, description="Deletion timestamp")
+    process_id: int = Field(..., description="Process ID")
+
+
+class ActionItemsResponse(BaseResponse):
+    """Response wrapper for speech_action_items endpoint."""
+
+    process_status: str = Field(..., description="Processing status")
+    speech_action_items: List[ActionItem] = Field(
+        ..., description="List of action items"
+    )
+
+
+class AbstractSummaryData(BaseModel):
+    """Abstract summary data model."""
+
+    id: int = Field(..., description="Summary ID")
+    status: str = Field(..., description="Summary status")
+    speech_otid: str = Field(..., description="Speech OTID")
+    items: List = Field(..., description="Summary items")
+    short_summary: str = Field(..., description="Short summary text")
+
+
+class AbstractSummaryResponse(BaseResponse):
+    """Response wrapper for abstract_summary endpoint."""
+
+    process_status: str = Field(..., description="Processing status")
+    abstract_summary: AbstractSummaryData = Field(
+        ..., description="Abstract summary data"
+    )
