@@ -17,3 +17,4 @@ myenv/
 
 # Gitignore itself (optional, for safety)
 .gitignore
+/coverage.xml
