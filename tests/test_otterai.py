@@ -12,7 +12,13 @@ from dotenv import load_dotenv
 from tenacity import RetryError
 
 from otterai.otterai import OtterAI, OtterAIException
-from otterai.models import ContactsResponse, FoldersResponse, MentionCandidatesResponse, GroupsResponse, SpeakersResponse
+from otterai.models import (
+    ContactsResponse,
+    FoldersResponse,
+    MentionCandidatesResponse,
+    GroupsResponse,
+    SpeakersResponse,
+)
 
 load_dotenv(dotenv_path=".env")
 

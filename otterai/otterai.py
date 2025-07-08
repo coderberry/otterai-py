@@ -5,7 +5,13 @@ import requests
 from requests_toolbelt.multipart.encoder import MultipartEncoder
 from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
 
-from .models import ContactsResponse, FoldersResponse, MentionCandidatesResponse, GroupsResponse, SpeakersResponse
+from .models import (
+    ContactsResponse,
+    FoldersResponse,
+    MentionCandidatesResponse,
+    GroupsResponse,
+    SpeakersResponse,
+)
 
 
 class OtterAIException(Exception):
