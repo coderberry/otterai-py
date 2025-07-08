@@ -5,6 +5,8 @@ import requests
 from requests_toolbelt.multipart.encoder import MultipartEncoder
 from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
 
+from .models import ContactsResponse, FoldersResponse, MentionCandidatesResponse
+
 
 class OtterAIException(Exception):
     pass
@@ -298,3 +300,70 @@ class OtterAI:
         response = self._make_request("GET", set_speech_title_url, params=payload)
 
         return self._handle_response(response)
+
+    # Structured data methods (Phase 2)
+    def get_contacts_structured(self):
+        """
+        Get all contacts with structured response.
+
+        Returns:
+            ContactsResponse: Structured response containing list of Contact objects
+
+        Raises:
+            OtterAIException: If userid is invalid
+        """
+        contacts_url = OtterAI.API_BASE_URL + "contacts"
+        if self._is_userid_invalid():
+            raise OtterAIException("userid is invalid")
+        payload = {"userid": self._userid}
+        response = self._make_request("GET", contacts_url, params=payload)
+
+        if response.status_code != 200:
+            raise OtterAIException(f"Failed to get contacts: {response.status_code}")
+
+        return ContactsResponse(**response.json())
+
+    def get_folders_structured(self):
+        """
+        Get all folders with structured response.
+
+        Returns:
+            FoldersResponse: Structured response containing list of Folder objects
+
+        Raises:
+            OtterAIException: If userid is invalid
+        """
+        folders_url = OtterAI.API_BASE_URL + "folders"
+        if self._is_userid_invalid():
+            raise OtterAIException("userid is invalid")
+        payload = {"userid": self._userid}
+        response = self._make_request("GET", folders_url, params=payload)
+
+        if response.status_code != 200:
+            raise OtterAIException(f"Failed to get folders: {response.status_code}")
+
+        return FoldersResponse(**response.json())
+
+    def get_speech_mention_candidates_structured(self, otid):
+        """
+        Get mention candidates for a speech with structured response.
+
+        Args:
+            otid (str): The speech ID
+
+        Returns:
+            MentionCandidatesResponse: Structured response containing list of MentionCandidate objects
+
+        Raises:
+            OtterAIException: If the request fails
+        """
+        mention_candidates_url = OtterAI.API_BASE_URL + "speech_mention_candidates"
+        payload = {"otid": otid}
+        response = self._make_request("GET", mention_candidates_url, params=payload)
+
+        if response.status_code != 200:
+            raise OtterAIException(
+                f"Failed to get mention candidates: {response.status_code}"
+            )
+
+        return MentionCandidatesResponse(**response.json())

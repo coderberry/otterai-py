@@ -8,6 +8,7 @@ Unofficial Python API for [otter.ai](http://otter.ai)
 
 -   [Installation](#installation)
 -   [Setup](#setup)
+-   [Interactive API Explorer](#interactive-api-explorer)
 -   [APIs](#apis)
     -   [User](#user)
     -   [Speeches](#speeches)
@@ -59,6 +60,72 @@ user = User(id=123, name="John Doe", email="john@example.com",
 ```
 
 Future versions will include structured methods (e.g., `get_user_structured()`) that return these models instead of raw dictionaries.
+
+## Interactive API Explorer
+
+The project includes an interactive CLI tool for easily testing and exploring the OtterAI API endpoints:
+
+```bash
+./perform.sh
+```
+
+This will launch an interactive menu that allows you to:
+
+- **Select APIs**: Choose from available endpoints like `abstract_summary`, `available_speeches`, `get_user`, etc.
+- **Multi-selection**: Select multiple APIs by entering comma-separated numbers (e.g., "1,3,5")
+- **Save responses**: Optionally save API responses to `./output/` directory as JSON files
+- **Rate limiting**: Automatically adds delays between API calls to avoid 429 errors
+- **Rich formatting**: Pretty-printed JSON responses with syntax highlighting
+- **Auto-setup**: Handles virtual environment and dependency installation automatically
+
+### Example Usage
+
+```bash
+$ ./perform.sh
+
+🦦 OtterAI API Explorer
+┌────────┬─────────────────────────────────────────────┬──────────────────────────────────────────────────────────────────┐
+│ Option │ API Name                                    │ Description                                                      │
+├────────┼─────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────┤
+│ [1]    │ abstract_summary                            │ Get abstract summary (placeholder - not implemented in API)     │
+│ [2]    │ applied_speech_template                     │ Get applied speech template (placeholder - not implemented in API)│
+│ [3]    │ available_speeches                          │ Get all speeches (available_speeches)                           │
+│ [4]    │ get_user                                    │ Get current user information                                     │
+│ [5]    │ get_speakers                                │ Get all speakers                                                │
+└────────┴─────────────────────────────────────────────┴──────────────────────────────────────────────────────────────────┘
+
+Enter API numbers (comma-separated) or 'done' to continue [done]: 3,4,5
+✅ Added: available_speeches
+✅ Added: get_user  
+✅ Added: get_speakers
+
+Would you like to save the responses to './output'? [y/N]: y
+
+🔐 Logging in to OtterAI...
+✅ Login successful!
+
+🚀 Starting API calls...
+🔄 Calling available_speeches...
+📡 API Response for available_speeches:
+[JSON response with syntax highlighting]
+💾 Saved response to ./output/available_speeches.json
+
+⏱️ Waiting 2 seconds to avoid rate limits...
+🔄 Calling get_user...
+...
+```
+
+### Prerequisites
+
+Create a `.env` file in the project root with your Otter.ai credentials:
+
+```plaintext
+OTTERAI_USERNAME=your_username
+OTTERAI_PASSWORD=your_password
+TEST_OTTERAI_SPEECH_OTID=your_test_speech_otid
+```
+
+The interactive runner will automatically install dependencies and handle authentication.
 
 ## APIs
 

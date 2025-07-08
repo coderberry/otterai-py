@@ -12,6 +12,7 @@ from dotenv import load_dotenv
 from tenacity import RetryError
 
 from otterai.otterai import OtterAI, OtterAIException
+from otterai.models import ContactsResponse, FoldersResponse, MentionCandidatesResponse
 
 load_dotenv(dotenv_path=".env")
 
@@ -22,6 +23,7 @@ DOWNLOAD_DIR = "test_downloads"
 
 
 # Login Tests
+@pytest.mark.integration
 def test_login(otterai_instance):
     username = os.getenv("OTTERAI_USERNAME")
     password = os.getenv("OTTERAI_PASSWORD")
@@ -32,16 +34,19 @@ def test_login(otterai_instance):
     assert response["status"] == requests.codes.ok
 
 
+@pytest.mark.integration
 def test_login_invalid_username(otterai_instance):
     response = otterai_instance.login("invalid_username", os.getenv("OTTERAI_PASSWORD"))
     assert response["status"] != requests.codes.ok
 
 
+@pytest.mark.integration
 def test_login_invalid_password(otterai_instance):
     response = otterai_instance.login(os.getenv("OTTERAI_USERNAME"), "invalid_password")
     assert response["status"] != requests.codes.ok
 
 
+@pytest.mark.integration
 def test_login_invalid_credentials(otterai_instance):
     response = otterai_instance.login("invalid_username", "invalid_password")
     assert response["status"] != requests.codes.ok
@@ -272,3 +277,128 @@ def test_download_speech_failure(authenticated_otterai_instance, monkeypatch):
         authenticated_otterai_instance.download_speech(
             otid=otid, name=file_name, fileformat=file_extension
         )
+
+
+# Structured Data Tests (Phase 2)
+def test_get_contacts_structured_success(authenticated_otterai_instance):
+    """Test get_contacts_structured returns structured ContactsResponse."""
+    response = authenticated_otterai_instance.get_contacts_structured()
+    assert isinstance(response, ContactsResponse)
+    assert response.status == "OK"
+    assert hasattr(response, "contacts")
+    assert hasattr(response, "user_id")
+    assert hasattr(response, "last_modified_at")
+    assert isinstance(response.contacts, list)
+
+
+def test_get_contacts_structured_invalid_userid(otterai_instance):
+    """Test get_contacts_structured raises exception with invalid userid."""
+    otterai_instance._userid = None
+    with pytest.raises(OtterAIException, match="userid is invalid"):
+        otterai_instance.get_contacts_structured()
+
+
+def test_get_folders_structured_success(authenticated_otterai_instance):
+    """Test get_folders_structured returns structured FoldersResponse."""
+    response = authenticated_otterai_instance.get_folders_structured()
+    assert isinstance(response, FoldersResponse)
+    assert response.status == "OK"
+    assert hasattr(response, "folders")
+    assert hasattr(response, "last_modified_at")
+    assert isinstance(response.folders, list)
+
+
+def test_get_folders_structured_invalid_userid(otterai_instance):
+    """Test get_folders_structured raises exception with invalid userid."""
+    otterai_instance._userid = None
+    with pytest.raises(OtterAIException, match="userid is invalid"):
+        otterai_instance.get_folders_structured()
+
+
+def test_get_speech_mention_candidates_structured_success(
+    authenticated_otterai_instance,
+):
+    """Test get_speech_mention_candidates_structured returns structured MentionCandidatesResponse."""
+    otid = TEST_SPEECH_OTID
+    response = authenticated_otterai_instance.get_speech_mention_candidates_structured(
+        otid
+    )
+    assert isinstance(response, MentionCandidatesResponse)
+    assert response.status == "OK"
+    assert hasattr(response, "mention_candidates")
+    assert isinstance(response.mention_candidates, list)
+
+
+# Unit tests for structured models
+def test_contacts_response_model():
+    """Test ContactsResponse model validation."""
+    data = {
+        "status": "OK",
+        "contacts": [
+            {
+                "id": 476734168,
+                "type": "contact",
+                "first_name": "Andres",
+                "last_name": "Granda",
+                "email": "agranda@giraffemediagroup.com",
+                "phone_number": None,
+                "avatar_url": None,
+            }
+        ],
+        "user_id": 25462508,
+        "last_modified_at": 1752002672,
+    }
+    response = ContactsResponse(**data)
+    assert response.status == "OK"
+    assert len(response.contacts) == 1
+    assert response.contacts[0].first_name == "Andres"
+    assert response.contacts[0].last_name == "Granda"
+    assert response.contacts[0].email == "agranda@giraffemediagroup.com"
+
+
+def test_folders_response_model():
+    """Test FoldersResponse model validation."""
+    data = {
+        "status": "OK",
+        "folders": [
+            {
+                "id": 1702429,
+                "created_at": 1751982020,
+                "last_modified_at": 1751982020,
+                "deleted_at": None,
+                "last_speech_added_at": None,
+                "speech_count": 0,
+                "user_id": 25462508,
+                "folder_name": "Video podcasts",
+            }
+        ],
+        "last_modified_at": 1752002685,
+    }
+    response = FoldersResponse(**data)
+    assert response.status == "OK"
+    assert len(response.folders) == 1
+    assert response.folders[0].folder_name == "Video podcasts"
+    assert response.folders[0].speech_count == 0
+
+
+def test_mention_candidates_response_model():
+    """Test MentionCandidatesResponse model validation."""
+    data = {
+        "status": "OK",
+        "mention_candidates": [
+            {
+                "id": 25462508,
+                "name": "Eric Berry",
+                "email": "eric@berrydev.ai",
+                "first_name": "Eric",
+                "last_name": "Berry",
+                "avatar_url": "https://profile.otter.ai/AMEQ3WM67T2EEP2Q/AMEQ3WM67T2EET2E",
+                "permission": "owner",
+            }
+        ],
+    }
+    response = MentionCandidatesResponse(**data)
+    assert response.status == "OK"
+    assert len(response.mention_candidates) == 1
+    assert response.mention_candidates[0].name == "Eric Berry"
+    assert response.mention_candidates[0].permission == "owner"

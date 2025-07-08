@@ -1,6 +1,7 @@
 """
 Pytest configuration and fixtures for OtterAI tests.
 """
+
 import os
 import warnings
 import pytest
@@ -16,9 +17,7 @@ def pytest_configure(config):
     config.addinivalue_line(
         "markers", "integration: marks tests as integration tests that hit real API"
     )
-    config.addinivalue_line(
-        "markers", "slow: marks tests as slow running"
-    )
+    config.addinivalue_line("markers", "slow: marks tests as slow running")
 
 
 def pytest_collection_modifyitems(config, items):
@@ -29,7 +28,7 @@ def pytest_collection_modifyitems(config, items):
             item.add_marker(pytest.mark.integration)
             item.add_marker(pytest.mark.slow)
             integration_tests.append(item.name)
-    
+
     # Warn if multiple integration tests are being run
     if len(integration_tests) > 1:
         warnings.warn(
@@ -42,7 +41,7 @@ def pytest_collection_modifyitems(config, items):
             f"  • Use mocked tests for CI/CD\n\n"
             f"Integration tests found: {integration_tests}\n",
             UserWarning,
-            stacklevel=2
+            stacklevel=2,
         )
 
 
