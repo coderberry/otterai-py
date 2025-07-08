@@ -11,14 +11,16 @@ import requests
 from dotenv import load_dotenv
 from tenacity import RetryError
 
+from otterai.models import AbstractSummaryResponse  # Phase 4 models
+from otterai.models import AvailableSpeechesResponse  # Phase 5 models
 from otterai.models import (
-    AbstractSummaryResponse,  # Phase 4 models
     ActionItemsResponse,
     ContactsResponse,
     FoldersResponse,
     GroupsResponse,
     MentionCandidatesResponse,
     SpeakersResponse,
+    SpeechResponse,
     SpeechTemplatesResponse,
 )
 from otterai.otterai import OtterAI, OtterAIException
@@ -824,3 +826,290 @@ def test_speech_templates_response_model_optional_fields():
     assert response.data.permissions.can_create_personal_templates is False
     assert response.data.templates[0].is_personal_template is True
     assert response.data.templates[0].created_by.id == 111111111
+
+
+# Phase 5: Speech Model - Most Complex Tests
+def test_get_speech_structured_success(authenticated_otterai_instance):
+    """Test get_speech_structured returns structured SpeechResponse."""
+    otid = TEST_SPEECH_OTID
+    response = authenticated_otterai_instance.get_speech_structured(otid)
+    assert isinstance(response, SpeechResponse)
+    assert response.status == "OK"
+    assert hasattr(response, "speech")
+    assert hasattr(response.speech, "otid")
+    assert response.speech.otid == otid
+    assert hasattr(response.speech, "title")
+    assert hasattr(response.speech, "owner")
+    assert hasattr(response.speech.owner, "name")
+
+
+def test_get_speech_structured_invalid_userid(otterai_instance):
+    """Test get_speech_structured raises exception with invalid userid."""
+    otterai_instance._userid = None
+    with pytest.raises(OtterAIException, match="userid is invalid"):
+        otterai_instance.get_speech_structured("invalid_otid")
+
+
+def test_get_available_speeches_structured_success(authenticated_otterai_instance):
+    """Test get_available_speeches_structured returns structured AvailableSpeechesResponse."""
+    response = authenticated_otterai_instance.get_available_speeches_structured()
+    assert isinstance(response, AvailableSpeechesResponse)
+    assert response.status == "OK"
+    assert hasattr(response, "speeches")
+    assert hasattr(response, "end_of_list")
+    assert isinstance(response.speeches, list)
+    assert isinstance(response.end_of_list, bool)
+
+
+# Unit tests for Phase 5 models
+def test_speech_response_model():
+    """Test SpeechResponse model validation with generic test data."""
+    data = {
+        "status": "OK",
+        "speech": {
+            "access_seconds": 5400,
+            "access_status": 1,
+            "appid": "otter-web",
+            "created_at": 1700000000,
+            "deleted": False,
+            "displayed_start_time": 1700000000,
+            "duration": 3600,
+            "end_time": 0,
+            "has_started": True,
+            "images": [],
+            "language": "en",
+            "live_status": "none",
+            "live_status_message": "",
+            "modified_time": 1700000000,
+            "otid": "test_otid_123",
+            "owner": {
+                "id": 111111111,
+                "name": "Test User",
+                "email": "test@example.com",
+                "first_name": "Test",
+                "last_name": "User",
+                "avatar_url": None,
+                "workspace": {"id": 999999999, "name": "Test Workspace"},
+            },
+            "shared_emails": [],
+            "shared_groups": [],
+            "shared_with": [],
+            "speakers": [],
+            "speech_id": "TEST123",
+            "start_time": 1700000000,
+            "title": "Test Speech",
+            "annotations": [],
+            "topic_matches": [],
+            "topics": [],
+        },
+    }
+    response = SpeechResponse(**data)
+    assert response.status == "OK"
+    assert isinstance(response.speech.otid, str)
+    assert isinstance(response.speech.title, str)
+    assert isinstance(response.speech.owner.name, str)
+    assert isinstance(response.speech.owner.workspace.name, str)
+    assert isinstance(response.speech.duration, int)
+    assert response.speech.duration > 0
+
+
+def test_available_speeches_response_model():
+    """Test AvailableSpeechesResponse model validation with generic test data."""
+    data = {
+        "status": "OK",
+        "last_load_ts": 1700000000,
+        "end_of_list": False,
+        "speeches": [
+            {
+                "access_seconds": 5400,
+                "access_status": 1,
+                "appid": "otter-web",
+                "created_at": 1700000000,
+                "deleted": False,
+                "displayed_start_time": 1700000000,
+                "duration": 3600,
+                "end_time": 0,
+                "has_started": True,
+                "images": [],
+                "language": "en",
+                "live_status": "none",
+                "live_status_message": "",
+                "modified_time": 1700000000,
+                "otid": "test_otid_123",
+                "owner": {
+                    "id": 111111111,
+                    "name": "Test User",
+                    "email": "test@example.com",
+                    "first_name": "Test",
+                    "last_name": "User",
+                    "avatar_url": None,
+                    "workspace": {"id": 999999999, "name": "Test Workspace"},
+                },
+                "shared_emails": [],
+                "shared_groups": [],
+                "shared_with": [],
+                "speakers": [],
+                "speech_id": "TEST123",
+                "start_time": 1700000000,
+                "title": "Test Speech",
+                "annotations": [],
+                "topic_matches": [],
+                "topics": [],
+            }
+        ],
+    }
+    response = AvailableSpeechesResponse(**data)
+    assert response.status == "OK"
+    assert response.end_of_list is False
+    assert len(response.speeches) == 1
+    assert isinstance(response.speeches[0].otid, str)
+    assert isinstance(response.speeches[0].title, str)
+    assert isinstance(response.speeches[0].owner.name, str)
+    assert isinstance(response.speeches[0].owner.workspace.name, str)
+
+
+def test_speech_model_optional_fields():
+    """Test Speech model handles optional fields correctly."""
+    data = {
+        "access_seconds": 5400,
+        "access_status": 1,
+        "appid": "otter-web",
+        "created_at": 1700000000,
+        "deleted": False,
+        "displayed_start_time": 1700000000,
+        "duration": 3600,
+        "end_time": 0,
+        "has_started": True,
+        "images": [],
+        "language": "en",
+        "live_status": "none",
+        "live_status_message": "",
+        "modified_time": 1700000000,
+        "otid": "test_otid_123",
+        "owner": {
+            "id": 111111111,
+            "name": "Test User",
+            "email": "test@example.com",
+            "first_name": "Test",
+            "last_name": "User",
+            "avatar_url": None,
+            "workspace": None,
+        },
+        "shared_emails": [],
+        "shared_groups": [],
+        "shared_with": [],
+        "speakers": [],
+        "speech_id": "TEST123",
+        "start_time": 1700000000,
+        "title": "Test Speech",
+        "annotations": [],
+        "topic_matches": [],
+        "topics": [],
+        "chat_status": {
+            "show_chat": True,
+            "owner_chat_enabled": True,
+            "viewer_opt_out": False,
+            "can_edit_chat": True,
+        },
+        "link_share": {"scope": None, "permission": None, "workspace_id": None},
+        "speech_outline": [
+            {
+                "id": 123456789,
+                "text": "Test Outline Item",
+                "start_offset": 0,
+                "end_offset": 1000,
+                "start_word_offset": 0,
+                "end_word_offset": 10,
+                "segments": [
+                    {
+                        "id": 987654321,
+                        "text": "Test Segment",
+                        "start_offset": 0,
+                        "end_offset": 500,
+                        "start_word_offset": 0,
+                        "end_word_offset": 5,
+                        "segments": None,
+                    }
+                ],
+            }
+        ],
+    }
+    from otterai.models import Speech
+
+    speech = Speech(**data)
+    assert speech.owner.workspace is None
+    assert speech.chat_status.show_chat is True
+    assert speech.link_share.scope is None
+    assert len(speech.speech_outline) == 1
+    assert speech.speech_outline[0].text == "Test Outline Item"
+    assert len(speech.speech_outline[0].segments) == 1
+    assert speech.speech_outline[0].segments[0].text == "Test Segment"
+
+
+def test_speech_model_complex_nested_structures():
+    """Test Speech model handles complex nested structures correctly."""
+    data = {
+        "access_seconds": 5400,
+        "access_status": 1,
+        "appid": "otter-web",
+        "created_at": 1700000000,
+        "deleted": False,
+        "displayed_start_time": 1700000000,
+        "duration": 3600,
+        "end_time": 0,
+        "has_started": True,
+        "images": [],
+        "language": "en",
+        "live_status": "none",
+        "live_status_message": "",
+        "modified_time": 1700000000,
+        "otid": "test_otid_123",
+        "owner": {
+            "id": 111111111,
+            "name": "Test User",
+            "email": "test@example.com",
+            "first_name": "Test",
+            "last_name": "User",
+            "avatar_url": None,
+            "workspace": {"id": 999999999, "name": "Test Workspace"},
+        },
+        "shared_emails": [],
+        "shared_groups": [],
+        "shared_with": [],
+        "speakers": [],
+        "speech_id": "TEST123",
+        "start_time": 1700000000,
+        "title": "Test Speech",
+        "annotations": [],
+        "topic_matches": [],
+        "topics": [],
+        "permissions": {
+            "highlight": {"create": True, "delete": True},
+            "comment": {"create": True, "delete": True},
+            "text_note": {"create": True, "delete": True},
+            "chat": {"create": True, "delete": True},
+            "speech_share": {"share": True, "share_button": True},
+            "assign": True,
+            "reorder": True,
+            "share": True,
+            "export": True,
+            "emoji_react": True,
+        },
+        "process_status": {
+            "abstract_summary": "finished",
+            "action_item": "finished",
+            "speech_outline": "success",
+        },
+        "word_clouds": [
+            {"word": "test", "score": "1.000", "variants": ["test", "testing"]}
+        ],
+    }
+    from otterai.models import Speech
+
+    speech = Speech(**data)
+    assert speech.permissions.assign is True
+    assert speech.permissions.highlight["create"] is True
+    assert speech.process_status.abstract_summary == "finished"
+    assert len(speech.word_clouds) == 1
+    assert speech.word_clouds[0].word == "test"
+    assert len(speech.word_clouds[0].variants) == 2
