@@ -88,3 +88,33 @@ When adding new API endpoints:
 5. Add corresponding tests with both success and failure cases
 
 The codebase uses tenacity for robust retry logic and requests-toolbelt for multipart uploads.
+
+## Structured Data Implementation Guidelines
+
+**⚠️ IMPORTANT**: Only implement structured data models for endpoints listed in `TEMP.md`. Do not create new endpoints or modify existing endpoint behavior unless explicitly specified.
+
+### Implementation Rules:
+1. **Endpoint Scope**: Only implement models for the exact endpoints listed in `TEMP.md`
+2. **Model Purpose**: Create Pydantic models to structure and validate the JSON responses from existing endpoints
+3. **Naming Convention**: Use `*_structured()` methods for structured versions of existing endpoints
+4. **Backward Compatibility**: Always maintain existing endpoint functionality - never modify existing method signatures or behavior
+5. **Parameter Matching**: Use the exact same parameters as shown in `TEMP.md` (e.g., `simple_group=true` for `list_groups`)
+
+### Current Endpoints in TEMP.md:
+- `list_groups?simple_group=true` → Group/GroupsResponse models
+- `speakers?userid={userid}` → Speaker/SpeakersResponse models  
+- `contacts?userid={userid}` → Contact/ContactsResponse models
+- `folders?userid={userid}` → Folder/FoldersResponse models
+- `speech_mention_candidates?otid={otid}` → MentionCandidate/MentionCandidatesResponse models
+
+### Phase-by-Phase Implementation:
+- **Phase 1**: Foundation setup (completed)
+- **Phase 2**: Simple models (completed)
+- **Phase 3**: Complex models for Groups and Speakers (in progress)
+- **Phase 4+**: Additional endpoints as specified in IMPLEMENTATION_SPEC.md
+
+### Key Reminders:
+- Never remove existing functionality
+- Always check `TEMP.md` for the authoritative list of endpoints to implement
+- Use sample API responses from `.claude/context/sample-api-responses/*.json` for model validation
+- Follow existing patterns for structured response methods

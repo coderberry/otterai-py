@@ -12,7 +12,7 @@ from dotenv import load_dotenv
 from tenacity import RetryError
 
 from otterai.otterai import OtterAI, OtterAIException
-from otterai.models import ContactsResponse, FoldersResponse, MentionCandidatesResponse
+from otterai.models import ContactsResponse, FoldersResponse, MentionCandidatesResponse, GroupsResponse, SpeakersResponse
 
 load_dotenv(dotenv_path=".env")
 
@@ -402,3 +402,239 @@ def test_mention_candidates_response_model():
     assert len(response.mention_candidates) == 1
     assert response.mention_candidates[0].name == "Eric Berry"
     assert response.mention_candidates[0].permission == "owner"
+
+
+# Phase 3: Complex Models Tests (TEMP.md endpoints)
+def test_list_groups_structured_success(authenticated_otterai_instance):
+    """Test list_groups_structured returns structured GroupsResponse for TEMP.md endpoint."""
+    response = authenticated_otterai_instance.list_groups_structured()
+    assert isinstance(response, GroupsResponse)
+    assert response.status == "OK"
+    assert hasattr(response, "groups")
+    assert hasattr(response, "last_load_ts")
+    assert isinstance(response.groups, list)
+
+
+def test_list_groups_structured_invalid_userid(otterai_instance):
+    """Test list_groups_structured raises exception with invalid userid."""
+    otterai_instance._userid = None
+    with pytest.raises(OtterAIException, match="userid is invalid"):
+        otterai_instance.list_groups_structured()
+
+
+def test_get_speakers_structured_success(authenticated_otterai_instance):
+    """Test get_speakers_structured returns structured SpeakersResponse for TEMP.md endpoint."""
+    response = authenticated_otterai_instance.get_speakers_structured()
+    assert isinstance(response, SpeakersResponse)
+    assert response.status == "OK"
+    assert hasattr(response, "speakers")
+    assert isinstance(response.speakers, list)
+
+
+def test_get_speakers_structured_invalid_userid(otterai_instance):
+    """Test get_speakers_structured raises exception with invalid userid."""
+    otterai_instance._userid = None
+    with pytest.raises(OtterAIException, match="userid is invalid"):
+        otterai_instance.get_speakers_structured()
+
+
+def test_groups_response_model():
+    """Test GroupsResponse model validation with real API data structure."""
+    data = {
+        "status": "OK",
+        "groups": [
+            {
+                "id": 18960476,
+                "created_at": 1739390477,
+                "last_modified_at": 1750865871,
+                "name": "Athena Weekly Check-in",
+                "is_deleted": False,
+                "is_public": False,
+                "has_left": False,
+                "public_name": None,
+                "description": None,
+                "new_unread_msg_count": 0,
+                "bolding": False,
+                "latest_message_time": "2025-06-25 15:01:39",
+                "last_group_visit_time": "2025-07-08 18:37:36",
+                "owner": {
+                    "id": 11682165,
+                    "name": "Radu Davidescu",
+                    "email": "radu.davidescu@objects.ro",
+                    "first_name": "Radu",
+                    "last_name": "Davidescu",
+                    "avatar_url": "https://profile.otter.ai/AFSIF24QWYP5HK75/AFSIF24QWYP5CVNE",
+                },
+                "cover_photo_url": None,
+                "avatar_url": None,
+                "open_post": True,
+                "open_invite": True,
+                "can_post": True,
+                "member_count": 10,
+                "dm_name": None,
+                "is_dm_visible": False,
+                "first_member": {
+                    "id": 11560822,
+                    "name": "Mark Berry",
+                    "email": "mark@bercastle.com",
+                    "first_name": "Mark",
+                    "last_name": "Berry",
+                    "avatar_url": "https://profile.otter.ai/AFQM53MQRCYKBV6V/AFQM53MQRCYKG6MZ",
+                },
+                "has_live_speech": False,
+                "is_autoshare_group": False,
+                "discoverability": "private",
+                "workspace_id": None,
+            }
+        ],
+        "last_load_ts": 1752002700,
+    }
+    response = GroupsResponse(**data)
+    assert response.status == "OK"
+    assert len(response.groups) == 1
+    assert response.groups[0].name == "Athena Weekly Check-in"
+    assert response.groups[0].owner.name == "Radu Davidescu"
+    assert response.groups[0].first_member.name == "Mark Berry"
+    assert response.groups[0].member_count == 10
+    assert response.groups[0].discoverability == "private"
+
+
+def test_speakers_response_model():
+    """Test SpeakersResponse model validation with real API data structure."""
+    data = {
+        "status": "OK",
+        "speakers": [
+            {
+                "id": 17514433,
+                "created_at": "2023-03-29 05:41:07",
+                "speaker_name": "Andres Granda",
+                "url": None,
+                "user_id": 11586451,
+                "self_speaker": True,
+                "speaker_email": None,
+                "owner": {
+                    "id": 11586451,
+                    "name": "Andres Granda",
+                    "email": "agranda@giraffemediagroup.com",
+                    "first_name": "Andres",
+                    "last_name": "Granda",
+                    "avatar_url": None,
+                },
+            },
+            {
+                "id": 44886446,
+                "created_at": "2025-02-26 08:10:57",
+                "speaker_name": "Eric Berry",
+                "url": "https://s3.us-west-2.amazonaws.com/userprof-prod/u25462508/spkr44886446-1740586257",
+                "user_id": 25462508,
+                "self_speaker": True,
+                "speaker_email": "eric@berrydev.ai",
+                "owner": {
+                    "id": 25462508,
+                    "name": "Eric Berry",
+                    "email": "eric@berrydev.ai",
+                    "first_name": "Eric",
+                    "last_name": "Berry",
+                    "avatar_url": "https://profile.otter.ai/AMEQ3WM67T2EEP2Q/AMEQ3WM67T2EET2E",
+                },
+            },
+        ],
+    }
+    response = SpeakersResponse(**data)
+    assert response.status == "OK"
+    assert len(response.speakers) == 2
+    assert response.speakers[0].speaker_name == "Andres Granda"
+    assert response.speakers[0].owner.name == "Andres Granda"
+    assert response.speakers[1].speaker_name == "Eric Berry"
+    assert response.speakers[1].speaker_email == "eric@berrydev.ai"
+    assert response.speakers[1].url is not None
+
+
+def test_groups_response_model_optional_fields():
+    """Test Group model handles optional fields correctly."""
+    data = {
+        "status": "OK",
+        "groups": [
+            {
+                "id": 19645020,
+                "created_at": 1740586260,
+                "last_modified_at": 1740586532,
+                "name": "General",
+                "is_deleted": False,
+                "is_public": False,
+                "has_left": False,
+                "public_name": None,
+                "description": None,
+                "new_unread_msg_count": 0,
+                "bolding": False,
+                "latest_message_time": "2025-02-26 16:11:22",
+                "last_group_visit_time": "2025-07-08 18:37:37",
+                "owner": {
+                    "id": 25462508,
+                    "name": "Eric Berry",
+                    "email": "eric@berrydev.ai",
+                    "first_name": "Eric",
+                    "last_name": "Berry",
+                    "avatar_url": "https://profile.otter.ai/AMEQ3WM67T2EEP2Q/AMEQ3WM67T2EET2E",
+                },
+                "cover_photo_url": None,
+                "avatar_url": None,
+                "open_post": True,
+                "open_invite": True,
+                "can_post": True,
+                "member_count": 1,
+                "dm_name": None,
+                "is_dm_visible": False,
+                "first_member": {
+                    "id": 25462508,
+                    "name": "Eric Berry",
+                    "email": "eric@berrydev.ai",
+                    "first_name": "Eric",
+                    "last_name": "Berry",
+                    "avatar_url": "https://profile.otter.ai/AMEQ3WM67T2EEP2Q/AMEQ3WM67T2EET2E",
+                },
+                "has_live_speech": False,
+                "is_autoshare_group": False,
+                "discoverability": "workspace",
+                "workspace_id": 6478039,
+            }
+        ],
+        "last_load_ts": 1752002700,
+    }
+    response = GroupsResponse(**data)
+    assert response.status == "OK"
+    assert response.groups[0].workspace_id == 6478039
+    assert response.groups[0].public_name is None
+    assert response.groups[0].description is None
+    assert response.groups[0].discoverability == "workspace"
+
+
+def test_speakers_response_model_optional_fields():
+    """Test Speaker model handles optional fields correctly."""
+    data = {
+        "status": "OK",
+        "speakers": [
+            {
+                "id": 17514433,
+                "created_at": "2023-03-29 05:41:07",
+                "speaker_name": "Andres Granda",
+                "url": None,
+                "user_id": 11586451,
+                "self_speaker": True,
+                "speaker_email": None,
+                "owner": {
+                    "id": 11586451,
+                    "name": "Andres Granda",
+                    "email": "agranda@giraffemediagroup.com",
+                    "first_name": "Andres",
+                    "last_name": "Granda",
+                    "avatar_url": None,
+                },
+            }
+        ],
+    }
+    response = SpeakersResponse(**data)
+    assert response.status == "OK"
+    assert response.speakers[0].url is None
+    assert response.speakers[0].speaker_email is None
+    assert response.speakers[0].owner.avatar_url is None

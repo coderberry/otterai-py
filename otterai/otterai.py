@@ -5,7 +5,7 @@ import requests
 from requests_toolbelt.multipart.encoder import MultipartEncoder
 from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
 
-from .models import ContactsResponse, FoldersResponse, MentionCandidatesResponse
+from .models import ContactsResponse, FoldersResponse, MentionCandidatesResponse, GroupsResponse, SpeakersResponse
 
 
 class OtterAIException(Exception):
@@ -268,7 +268,7 @@ class OtterAI:
         list_groups_url = OtterAI.API_BASE_URL + "list_groups"
         if self._is_userid_invalid():
             raise OtterAIException("userid is invalid")
-        payload = {"userid": self._userid}
+        payload = {"simple_group": "true"}
         response = self._make_request("GET", list_groups_url, params=payload)
 
         return self._handle_response(response)
@@ -367,3 +367,45 @@ class OtterAI:
             )
 
         return MentionCandidatesResponse(**response.json())
+
+    def list_groups_structured(self):
+        """
+        Get all groups with structured response (matches TEMP.md endpoint).
+
+        Returns:
+            GroupsResponse: Structured response containing list of Group objects
+
+        Raises:
+            OtterAIException: If userid is invalid
+        """
+        list_groups_url = OtterAI.API_BASE_URL + "list_groups"
+        if self._is_userid_invalid():
+            raise OtterAIException("userid is invalid")
+        payload = {"simple_group": "true"}
+        response = self._make_request("GET", list_groups_url, params=payload)
+
+        if response.status_code != 200:
+            raise OtterAIException(f"Failed to get groups: {response.status_code}")
+
+        return GroupsResponse(**response.json())
+
+    def get_speakers_structured(self):
+        """
+        Get all speakers with structured response (matches TEMP.md endpoint).
+
+        Returns:
+            SpeakersResponse: Structured response containing list of Speaker objects
+
+        Raises:
+            OtterAIException: If userid is invalid
+        """
+        speakers_url = OtterAI.API_BASE_URL + "speakers"
+        if self._is_userid_invalid():
+            raise OtterAIException("userid is invalid")
+        payload = {"userid": self._userid}
+        response = self._make_request("GET", speakers_url, params=payload)
+
+        if response.status_code != 200:
+            raise OtterAIException(f"Failed to get speakers: {response.status_code}")
+
+        return SpeakersResponse(**response.json())

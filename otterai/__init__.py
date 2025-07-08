@@ -10,4 +10,8 @@ from otterai.models import (
     FoldersResponse,
     MentionCandidate,
     MentionCandidatesResponse,
+    Group,
+    GroupsResponse,
+    Speaker,
+    SpeakersResponse,
 )
