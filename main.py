@@ -84,6 +84,37 @@ class OtterAIRunner:
                 "desc": "Get mention candidates (structured)",
                 "params": ["otid"],
             },
+            "16": {
+                "name": "get_speech_templates_structured",
+                "desc": "Get speech templates (structured)",
+                "params": [],
+            },
+            "17": {
+                "name": "get_speech_action_items_structured",
+                "desc": "Get speech action items (structured)",
+                "params": ["otid"],
+            },
+            "18": {
+                "name": "get_abstract_summary_structured",
+                "desc": "Get abstract summary (structured)",
+                "params": ["otid"],
+            },
+            "19": {
+                "name": "get_speech_structured",
+                "desc": "Get speech (structured)",
+                "params": ["otid"],
+            },
+            "20": {
+                "name": "get_available_speeches_structured",
+                "desc": "Get available speeches (structured)",
+                "params": [
+                    "funnel",
+                    "page_size",
+                    "use_serializer",
+                    "source",
+                    "speech_metadata",
+                ],
+            },
         }
 
     def login(self) -> bool:
@@ -174,6 +205,22 @@ class OtterAIRunner:
                     f"Enter {param} (default: txt,pdf,mp3,docx,srt): ", required=False
                 )
                 params[param] = value or "txt,pdf,mp3,docx,srt"
+            elif param == "funnel":
+                value = self.get_user_input(
+                    f"Enter {param} (default: home_feed): ", required=False
+                )
+                params[param] = value or "home_feed"
+            elif param == "use_serializer":
+                value = self.get_user_input(
+                    f"Enter {param} (default: HomeFeedSpeechWithoutSharedGroupsSerializer): ",
+                    required=False,
+                )
+                params[param] = value or "HomeFeedSpeechWithoutSharedGroupsSerializer"
+            elif param == "speech_metadata":
+                value = self.get_user_input(
+                    f"Enter {param} (default: true): ", required=False
+                )
+                params[param] = (value or "true").lower() == "true"
             else:
                 params[param] = self.get_user_input(f"Enter {param}: ")
 

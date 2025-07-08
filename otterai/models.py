@@ -5,7 +5,7 @@ This module provides base models and common data structures used across
 the OtterAI API endpoints.
 """
 
-from typing import List, Optional
+from typing import List, Optional, Union
 
 from pydantic import BaseModel, Field
 
@@ -271,3 +271,332 @@ class AbstractSummaryResponse(BaseResponse):
     abstract_summary: AbstractSummaryData = Field(
         ..., description="Abstract summary data"
     )
+
+
+# Phase 5: Speech Model - Most Complex
+
+
+class ChatStatus(BaseModel):
+    """Chat status configuration model."""
+
+    show_chat: bool = Field(..., description="Whether to show chat")
+    owner_chat_enabled: bool = Field(..., description="Whether owner chat is enabled")
+    viewer_opt_out: bool = Field(..., description="Whether viewer opted out")
+    can_edit_chat: bool = Field(..., description="Whether chat can be edited")
+
+
+class LinkShare(BaseModel):
+    """Link sharing configuration model."""
+
+    scope: Optional[str] = Field(None, description="Sharing scope")
+    permission: Optional[str] = Field(None, description="Sharing permission")
+    workspace_id: Optional[int] = Field(None, description="Workspace ID for sharing")
+
+
+class SpeechOutlineSegment(BaseModel):
+    """Speech outline segment model."""
+
+    id: int = Field(..., description="Segment ID")
+    text: str = Field(..., description="Segment text")
+    start_offset: int = Field(..., description="Start offset in milliseconds")
+    end_offset: int = Field(..., description="End offset in milliseconds")
+    start_word_offset: int = Field(..., description="Start word offset")
+    end_word_offset: int = Field(..., description="End word offset")
+    segments: Optional[List["SpeechOutlineSegment"]] = Field(
+        None, description="Nested segments"
+    )
+
+
+class SpeechOutlineItem(BaseModel):
+    """Speech outline item model."""
+
+    id: int = Field(..., description="Outline item ID")
+    text: str = Field(..., description="Outline item text")
+    start_offset: int = Field(..., description="Start offset in milliseconds")
+    end_offset: int = Field(..., description="End offset in milliseconds")
+    start_word_offset: int = Field(..., description="Start word offset")
+    end_word_offset: int = Field(..., description="End word offset")
+    segments: List[SpeechOutlineSegment] = Field(
+        ..., description="List of outline segments"
+    )
+
+
+class SpeechPermissions(BaseModel):
+    """Speech permissions model."""
+
+    highlight: dict = Field(..., description="Highlight permissions")
+    comment: dict = Field(..., description="Comment permissions")
+    text_note: dict = Field(..., description="Text note permissions")
+    chat: dict = Field(..., description="Chat permissions")
+    speech_share: dict = Field(..., description="Speech share permissions")
+    assign: bool = Field(..., description="Assign permission")
+    reorder: bool = Field(..., description="Reorder permission")
+    share: bool = Field(..., description="Share permission")
+    export: bool = Field(..., description="Export permission")
+    emoji_react: bool = Field(..., description="Emoji react permission")
+
+
+class ProcessStatus(BaseModel):
+    """Processing status model."""
+
+    abstract_summary: str = Field(..., description="Abstract summary status")
+    action_item: str = Field(..., description="Action item status")
+    speech_outline: str = Field(..., description="Speech outline status")
+
+
+class SpeechSettings(BaseModel):
+    """Speech settings model."""
+
+    allow_topics: bool = Field(..., description="Allow topics")
+    language: bool = Field(..., description="Language setting")
+    allow_collaborators_to_share: bool = Field(
+        ..., description="Allow collaborators to share"
+    )
+    allow_viewers_to_export: bool = Field(..., description="Allow viewers to export")
+
+
+class WordCloudItem(BaseModel):
+    """Word cloud item model."""
+
+    word: str = Field(..., description="Word")
+    score: str = Field(..., description="Score")
+    variants: List[str] = Field(..., description="Word variants")
+
+
+class SessionInfo(BaseModel):
+    """Session information model."""
+
+    live_status: str = Field(..., description="Live status")
+    live_status_message: str = Field(..., description="Live status message")
+    id: Optional[str] = Field(None, description="Session ID")
+    title: str = Field(..., description="Session title")
+    offset: int = Field(..., description="Session offset")
+
+
+class LanguageFamily(BaseModel):
+    """Language family configuration model."""
+
+    word_separator: str = Field(..., description="Word separator")
+    multiplier: int = Field(..., description="Multiplier")
+    segment_punctuations: Optional[List[str]] = Field(
+        None, description="Segment punctuations"
+    )
+
+
+class LanguageConfig(BaseModel):
+    """Language configuration model."""
+
+    version: str = Field(..., description="Configuration version")
+    default: LanguageFamily = Field(..., description="Default language family")
+    language_families: dict = Field(..., description="Language families")
+    languages: dict = Field(..., description="Languages")
+    metadata: dict = Field(..., description="Configuration metadata")
+
+
+class TranscriptAlignment(BaseModel):
+    """Transcript alignment model."""
+
+    word: str = Field(..., description="Word")
+    start: float = Field(..., description="Start time")
+    end: float = Field(..., description="End time")
+    startOffset: int = Field(..., description="Start offset")
+    endOffset: int = Field(..., description="End offset")
+
+
+class Transcript(BaseModel):
+    """Transcript model."""
+
+    uuid: str = Field(..., description="Transcript UUID")
+    id: int = Field(..., description="Transcript ID")
+    start_offset: int = Field(..., description="Start offset")
+    end_offset: int = Field(..., description="End offset")
+    transcript: str = Field(..., description="Transcript text")
+    label: str = Field(..., description="Speaker label")
+    speaker_id: Optional[str] = Field(None, description="Speaker ID")
+    created_at: str = Field(..., description="Created timestamp")
+    speaker_model_label: Optional[str] = Field(None, description="Speaker model label")
+    speech_id: str = Field(..., description="Speech ID")
+    speaker_edited_at: Optional[str] = Field(
+        None, description="Speaker edited timestamp"
+    )
+    alignment: List[TranscriptAlignment] = Field(..., description="Word alignment")
+    sig: str = Field(..., description="Signature")
+
+
+class UserWithWorkspace(BaseModel):
+    """User model with workspace information."""
+
+    id: int = Field(..., description="User ID")
+    name: str = Field(..., description="User name")
+    email: str = Field(..., description="Email address")
+    first_name: str = Field(..., description="First name")
+    last_name: str = Field(..., description="Last name")
+    avatar_url: Optional[str] = Field(None, description="Avatar URL")
+    workspace: Optional[Workspace] = Field(None, description="Workspace information")
+
+
+class Speech(BaseModel):
+    """Complete speech model with all nested structures."""
+
+    access_request: Optional[str] = Field(None, description="Access request")
+    access_seconds: int = Field(..., description="Access seconds")
+    access_status: int = Field(..., description="Access status")
+    action_item_count: Optional[int] = Field(None, description="Action item count")
+    agent_session: Optional[str] = Field(None, description="Agent session")
+    allow_transcript_copy: Optional[bool] = Field(
+        None, description="Allow transcript copy"
+    )
+    appid: str = Field(..., description="Application ID")
+    audio_enabled: Optional[bool] = Field(None, description="Audio enabled")
+    auto_record: Optional[bool] = Field(None, description="Auto record")
+    auto_snapshot_enabled: Optional[bool] = Field(
+        None, description="Auto snapshot enabled"
+    )
+    calendar_guests: Optional[str] = Field(None, description="Calendar guests")
+    calendar_meeting_id: Optional[Union[str, int]] = Field(
+        None, description="Calendar meeting ID"
+    )
+    can_comment: Optional[bool] = Field(None, description="Can comment")
+    can_edit: Optional[bool] = Field(None, description="Can edit")
+    can_export: Optional[bool] = Field(None, description="Can export")
+    can_highlight: Optional[bool] = Field(None, description="Can highlight")
+    chat_status: Optional[ChatStatus] = Field(None, description="Chat status")
+    conf_image_url: Optional[str] = Field(None, description="Conference image URL")
+    conf_join_url: Optional[str] = Field(None, description="Conference join URL")
+    create_method: Optional[str] = Field(None, description="Create method")
+    created_at: int = Field(..., description="Created timestamp")
+    deleted: bool = Field(..., description="Deleted status")
+    displayed_start_time: int = Field(..., description="Displayed start time")
+    download_url: Optional[str] = Field(None, description="Download URL")
+    duration: int = Field(..., description="Duration in seconds")
+    end_time: int = Field(..., description="End time")
+    first_shared_group_name: Optional[str] = Field(
+        None, description="First shared group name"
+    )
+    folder: Optional[str] = Field(None, description="Folder")
+    from_shared: Optional[bool] = Field(None, description="From shared")
+    hasPhotos: Optional[int] = Field(None, description="Has photos")
+    has_meeting_series_access: Optional[bool] = Field(
+        None, description="Has meeting series access"
+    )
+    has_started: bool = Field(..., description="Has started")
+    image_urls: Optional[str] = Field(None, description="Image URLs")
+    images: List = Field(..., description="Images")
+    is_low_confidence: Optional[bool] = Field(None, description="Is low confidence")
+    is_meeting_series: Optional[bool] = Field(None, description="Is meeting series")
+    is_read: Optional[bool] = Field(None, description="Is read")
+    language: str = Field(..., description="Language")
+    link_share: Optional[LinkShare] = Field(None, description="Link share")
+    live_status: str = Field(..., description="Live status")
+    live_status_message: str = Field(..., description="Live status message")
+    meeting_otid: Optional[str] = Field(None, description="Meeting OTID")
+    modified_time: int = Field(..., description="Modified time")
+    non_member_shared_groups: Optional[List] = Field(
+        None, description="Non-member shared groups"
+    )
+    otid: str = Field(..., description="OTID")
+    owner: UserWithWorkspace = Field(..., description="Owner")
+    permissions: Optional[SpeechPermissions] = Field(None, description="Permissions")
+    process_failed: Optional[bool] = Field(None, description="Process failed")
+    process_finished: Optional[bool] = Field(None, description="Process finished")
+    process_status: Optional[ProcessStatus] = Field(None, description="Process status")
+    public_share_url: Optional[str] = Field(None, description="Public share URL")
+    public_view: Optional[bool] = Field(None, description="Public view")
+    pubsub_jwt: Optional[str] = Field(None, description="Pubsub JWT")
+    pubsub_jwt_persistent: Optional[str] = Field(
+        None, description="Pubsub JWT persistent"
+    )
+    sales_call_qualified: Optional[bool] = Field(
+        None, description="Sales call qualified"
+    )
+    shared_by: Optional[str] = Field(None, description="Shared by")
+    shared_emails: Optional[List] = Field(default=[], description="Shared emails")
+    shared_groups: Optional[List] = Field(default=[], description="Shared groups")
+    shared_with: Optional[List] = Field(default=[], description="Shared with")
+    short_abstract_summary: Optional[str] = Field(
+        None, description="Short abstract summary"
+    )
+    speakers: List = Field(..., description="Speakers")
+    speech_id: str = Field(..., description="Speech ID")
+    speech_metadata: Optional[dict] = Field(None, description="Speech metadata")
+    speech_outline: Optional[List[SpeechOutlineItem]] = Field(
+        None, description="Speech outline"
+    )
+    speech_outline_status: Optional[str] = Field(
+        None, description="Speech outline status"
+    )
+    speech_settings: Optional[SpeechSettings] = Field(
+        None, description="Speech settings"
+    )
+    start_time: int = Field(..., description="Start time")
+    summary: Optional[str] = Field(None, description="Summary")
+    timecode_offset: Optional[str] = Field(None, description="Timecode offset")
+    timezone: Optional[str] = Field(None, description="Timezone")
+    title: Optional[str] = Field(None, description="Title")
+    transcript_updated_at: Optional[int] = Field(
+        None, description="Transcript updated at"
+    )
+    unshared: Optional[bool] = Field(None, description="Unshared")
+    upload_finished: Optional[bool] = Field(None, description="Upload finished")
+    word_clouds: Optional[List[WordCloudItem]] = Field(None, description="Word clouds")
+    session_info: Optional[List[SessionInfo]] = Field(None, description="Session info")
+    has_hidden_transcript: Optional[bool] = Field(
+        None, description="Has hidden transcript"
+    )
+    language_config: Optional[LanguageConfig] = Field(
+        None, description="Language config"
+    )
+    transcripts: Optional[List[Transcript]] = Field(None, description="Transcripts")
+    realign_finished: Optional[bool] = Field(None, description="Realign finished")
+    rematch_finished: Optional[bool] = Field(None, description="Rematch finished")
+    diarization_finished: Optional[bool] = Field(
+        None, description="Diarization finished"
+    )
+    rematch_cutoff_time: Optional[str] = Field(None, description="Rematch cutoff time")
+    annotations: Optional[List] = Field(default=[], description="Annotations")
+    topic_matches: Optional[List] = Field(default=[], description="Topic matches")
+    allow_topics: Optional[bool] = Field(None, description="Allow topics")
+    topics: Optional[List] = Field(default=[], description="Topics")
+    topic_status: Optional[str] = Field(None, description="Topic status")
+    audio_url: Optional[str] = Field(None, description="Audio URL")
+    show_live_summary: Optional[bool] = Field(None, description="Show live summary")
+    crm_export_urls: Optional[dict] = Field(None, description="CRM export URLs")
+    feedback_permission_checkbox_value: Optional[bool] = Field(
+        None, description="Feedback permission checkbox value"
+    )
+    feedback_permission_show_checkbox: Optional[bool] = Field(
+        None, description="Feedback permission show checkbox"
+    )
+    feedback_permission_type: Optional[str] = Field(
+        None, description="Feedback permission type"
+    )
+    block_summary_display: Optional[bool] = Field(
+        None, description="Block summary display"
+    )
+    block_transcript_display: Optional[bool] = Field(
+        None, description="Block transcript display"
+    )
+
+
+class SpeechResponse(BaseResponse):
+    """Response wrapper for speech endpoint."""
+
+    speech: Speech = Field(..., description="Speech data")
+
+
+class AvailableSpeeches(BaseModel):
+    """Available speeches data model."""
+
+    end_of_list: bool = Field(..., description="End of list indicator")
+    speeches: List[Speech] = Field(..., description="List of speeches")
+
+
+class AvailableSpeechesResponse(BaseResponse):
+    """Response wrapper for available_speeches endpoint."""
+
+    end_of_list: bool = Field(..., description="End of list indicator")
+    speeches: List[Speech] = Field(..., description="List of speeches")
+
+
+# Forward reference resolution
+SpeechOutlineSegment.model_rebuild()

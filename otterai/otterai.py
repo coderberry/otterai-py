@@ -5,14 +5,16 @@ import requests
 from requests_toolbelt.multipart.encoder import MultipartEncoder
 from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
 
+from .models import AbstractSummaryResponse  # Phase 4 models
+from .models import AvailableSpeechesResponse  # Phase 5 models
 from .models import (
-    AbstractSummaryResponse,  # Phase 4 models
     ActionItemsResponse,
     ContactsResponse,
     FoldersResponse,
     GroupsResponse,
     MentionCandidatesResponse,
     SpeakersResponse,
+    SpeechResponse,
     SpeechTemplatesResponse,
 )
 
@@ -488,3 +490,71 @@ class OtterAI:
             )
 
         return AbstractSummaryResponse(**response.json())
+
+    # Phase 5: Speech Model - Most Complex - Structured Methods
+
+    def get_speech_structured(self, otid: str):
+        """
+        Get speech with structured response.
+
+        Args:
+            otid (str): Speech OTID
+
+        Returns:
+            SpeechResponse: Structured response containing Speech object
+
+        Raises:
+            OtterAIException: If userid is invalid or request fails
+        """
+        if self._is_userid_invalid():
+            raise OtterAIException("userid is invalid")
+
+        speech_url = OtterAI.API_BASE_URL + "speech"
+        payload = {"userid": self._userid, "otid": otid}
+        response = self._make_request("GET", speech_url, params=payload)
+
+        if response.status_code != 200:
+            raise OtterAIException(f"Failed to get speech: {response.status_code}")
+
+        return SpeechResponse(**response.json())
+
+    def get_available_speeches_structured(
+        self,
+        funnel: str = "home_feed",
+        page_size: int = 6,
+        use_serializer: str = "HomeFeedSpeechWithoutSharedGroupsSerializer",
+        source: str = "home",
+        speech_metadata: bool = True,
+    ):
+        """
+        Get available speeches with structured response.
+
+        Args:
+            funnel (str): Funnel type
+            page_size (int): Page size
+            use_serializer (str): Serializer to use
+            source (str): Source type
+            speech_metadata (bool): Include speech metadata
+
+        Returns:
+            AvailableSpeechesResponse: Structured response containing list of Speech objects
+
+        Raises:
+            OtterAIException: If request fails
+        """
+        speeches_url = OtterAI.API_BASE_URL + "available_speeches"
+        payload = {
+            "funnel": funnel,
+            "page_size": page_size,
+            "use_serializer": use_serializer,
+            "source": source,
+            "speech_metadata": str(speech_metadata).lower(),
+        }
+        response = self._make_request("GET", speeches_url, params=payload)
+
+        if response.status_code != 200:
+            raise OtterAIException(
+                f"Failed to get available speeches: {response.status_code}"
+            )
+
+        return AvailableSpeechesResponse(**response.json())
