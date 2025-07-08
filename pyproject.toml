@@ -13,6 +13,7 @@ dependencies = [
     "requests-toolbelt>=1.0.0",
     "requests>=2.32.3",
     "tenacity>=8.2.2",
+    "pydantic>=2.0.0",
 ]
 keywords = ["api", "otter", "otterai", "otterai-py", "python"]
 requires-python = ">=3.9"
