@@ -49,17 +49,92 @@ otter.login('USERNAME', 'PASSWORD')
 
 ### Structured Data Models
 
-This library now includes Pydantic models for structured data handling:
+This library includes comprehensive Pydantic models for structured data handling with full type safety and validation:
 
 ```python
-from otterai import User, Workspace, Permission, BaseResponse
+from otterai import (
+    OtterAI,
+    ContactsResponse, 
+    GroupsResponse, 
+    SpeechResponse,
+    SpeakersResponse,
+    FoldersResponse,
+    SpeechTemplatesResponse,
+    ActionItemsResponse,
+    AbstractSummaryResponse,
+    AvailableSpeechesResponse,
+    MentionCandidatesResponse
+)
 
-# Models provide type safety and validation
-user = User(id=123, name="John Doe", email="john@example.com", 
-           first_name="John", last_name="Doe")
+# Initialize client
+otter = OtterAI()
+otter.login('USERNAME', 'PASSWORD')
+
+# Use structured methods for type-safe responses
+contacts = otter.get_contacts_structured()
+print(f"Found {len(contacts.contacts)} contacts")
+for contact in contacts.contacts:
+    print(f"- {contact.first_name} {contact.last_name} ({contact.email})")
+
+# Get groups with nested user objects
+groups = otter.list_groups_structured()
+for group in groups.groups:
+    print(f"Group: {group.name} - Owner: {group.owner.name}")
+
+# Get speech with complex nested structures
+speech = otter.get_speech_structured("your_speech_otid")
+print(f"Speech: {speech.speech.title}")
+print(f"Duration: {speech.speech.duration} seconds")
+if speech.speech.chat_status:
+    print(f"Chat enabled: {speech.speech.chat_status.show_chat}")
+
+# Get available speeches with pagination
+speeches = otter.get_available_speeches_structured(
+    funnel="home_feed",
+    page_size=10,
+    source="home"
+)
+print(f"Found {len(speeches.speeches)} speeches")
 ```
 
-Future versions will include structured methods (e.g., `get_user_structured()`) that return these models instead of raw dictionaries.
+#### Migration Guide
+
+**From Raw Dictionary Responses to Structured Models:**
+
+```python
+# Old approach (still supported)
+speeches_raw = otter.get_speeches()
+title = speeches_raw['data']['speeches'][0]['title']  # Fragile
+
+# New structured approach
+speeches = otter.get_available_speeches_structured()
+title = speeches.speeches[0].title  # Type-safe with IDE support
+```
+
+**Benefits of Structured Models:**
+
+- **Type Safety**: Full IDE support with autocomplete and type checking
+- **Validation**: Automatic validation of API responses
+- **Documentation**: Built-in field descriptions and type hints
+- **Backward Compatibility**: All existing methods continue to work
+- **Error Prevention**: Catch API changes at runtime with clear error messages
+
+**Available Structured Methods:**
+
+All endpoints now have structured equivalents:
+
+| Original Method | Structured Method | Response Model |
+|----------------|-------------------|----------------|
+| `get_contacts()` | `get_contacts_structured()` | `ContactsResponse` |
+| `get_folders()` | `get_folders_structured()` | `FoldersResponse` |
+| `list_groups()` | `list_groups_structured()` | `GroupsResponse` |
+| `get_speakers()` | `get_speakers_structured()` | `SpeakersResponse` |
+| `get_speech()` | `get_speech_structured()` | `SpeechResponse` |
+| N/A | `get_available_speeches_structured()` | `AvailableSpeechesResponse` |
+| N/A | `get_speech_templates_structured()` | `SpeechTemplatesResponse` |
+| N/A | `get_speech_action_items_structured()` | `ActionItemsResponse` |
+| N/A | `get_abstract_summary_structured()` | `AbstractSummaryResponse` |
+| N/A | `get_speech_mention_candidates_structured()` | `MentionCandidatesResponse` |
 
 ## Interactive API Explorer
 
@@ -244,9 +319,11 @@ except OtterAIException as e:
 
 ## Testing
 
-⚠️ **Important**: This project has two types of tests:
+⚠️ **Important**: This project has three types of tests:
 
 - **Unit tests**: Mock tests that don't hit the API (safe to run)
+- **Mock API tests**: Comprehensive tests with mock data (safe to run)
+- **Performance tests**: Memory and speed tests with large datasets (safe to run)
 - **Integration tests**: Tests that make real API calls (can cause rate limits)
 
 ### Running Tests Safely
@@ -255,6 +332,12 @@ except OtterAIException as e:
 # Run only unit tests (recommended for development)
 pytest tests/ -m 'not integration'
 
+# Run comprehensive mock tests with full coverage
+pytest tests/test_mock_api_responses.py -v
+
+# Run performance tests
+pytest tests/test_performance.py -v
+
 # Run a single integration test
 pytest tests/test_otterai.py::test_get_user -s
 
@@ -262,9 +345,38 @@ pytest tests/test_otterai.py::test_get_user -s
 pytest tests/ --collect-only
 ```
 
+### Test Coverage
+
+The test suite includes:
+
+- **17 mock API tests** covering all structured endpoints
+- **7 performance tests** with large datasets and memory efficiency
+- **33 unit tests** covering all functionality
+- **12 integration tests** for real API validation
+
+### Mock Tests
+
+The mock tests use generic, non-PII data and cover:
+
+- All structured API endpoints
+- Error handling scenarios
+- Edge cases and optional field handling
+- Network errors and JSON parsing errors
+- Pydantic validation errors
+- Empty lists and null values
+
+### Performance Tests
+
+Performance tests ensure:
+
+- Large datasets (1000+ items) process within 1-2 seconds
+- Complex nested structures are handled efficiently
+- Memory usage remains reasonable with large objects
+- Serialization performance is optimized
+
 ### Rate Limiting Warning
 
-Running all tests together **will cause 429 rate limit errors** from the Otter.ai API. The test suite will warn you if you attempt this:
+Running all integration tests together **will cause 429 rate limit errors** from the Otter.ai API. The test suite will warn you if you attempt this:
 
 ```
 ⚠️  WARNING: Running 12 integration tests together!
